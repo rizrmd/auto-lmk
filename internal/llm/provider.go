@@ -1,9 +1,12 @@
 package llm
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 )
 
 // Provider interface for LLM implementations
@@ -38,9 +41,10 @@ type FunctionCall struct {
 
 // Config for LLM provider
 type Config struct {
-	Provider string
-	APIKey   string
-	Model    string
+	Provider    string
+	APIKey      string
+	Model       string
+	ZAIEndpoint string
 }
 
 // NewProvider creates appropriate LLM provider
@@ -50,6 +54,8 @@ func NewProvider(cfg Config) (Provider, error) {
 		return NewOpenAIProvider(cfg.APIKey, cfg.Model)
 	case "anthropic":
 		return NewAnthropicProvider(cfg.APIKey, cfg.Model)
+	case "zai":
+		return NewZAIProvider(cfg.APIKey, cfg.Model, cfg.ZAIEndpoint)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", cfg.Provider)
 	}
@@ -107,6 +113,157 @@ func (p *AnthropicProvider) Chat(ctx context.Context, messages []Message, functi
 	// 5. Return response
 
 	return nil, fmt.Errorf("Anthropic integration not yet implemented")
+}
+
+// ZAIProvider implements Z.AI API
+type ZAIProvider struct {
+	apiKey   string
+	model    string
+	endpoint string
+	client   *http.Client
+}
+
+func NewZAIProvider(apiKey, model, endpoint string) (*ZAIProvider, error) {
+	if apiKey == "" {
+		return nil, fmt.Errorf("Z.AI API key required")
+	}
+	if model == "" {
+		model = "glm-4-flash" // Default to GLM-4-Flash
+	}
+	if endpoint == "" {
+		endpoint = "https://api.z.ai/api/coding/paas/v4"
+	}
+	return &ZAIProvider{
+		apiKey:   apiKey,
+		model:    model,
+		endpoint: endpoint,
+		client:   &http.Client{},
+	}, nil
+}
+
+// Z.AI API request/response structures
+type zaiRequest struct {
+	Model    string       `json:"model"`
+	Messages []Message    `json:"messages"`
+	Tools    []zaiTool    `json:"tools,omitempty"`
+	Stream   bool         `json:"stream"`
+}
+
+type zaiTool struct {
+	Type     string      `json:"type"`
+	Function zaiFunction `json:"function"`
+}
+
+type zaiFunction struct {
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Parameters  map[string]interface{} `json:"parameters"`
+}
+
+type zaiResponse struct {
+	Choices []struct {
+		Message struct {
+			Role      string `json:"role"`
+			Content   string `json:"content"`
+			ToolCalls []struct {
+				ID       string `json:"id"`
+				Type     string `json:"type"`
+				Function struct {
+					Name      string `json:"name"`
+					Arguments string `json:"arguments"`
+				} `json:"function"`
+			} `json:"tool_calls,omitempty"`
+		} `json:"message"`
+		FinishReason string `json:"finish_reason"`
+	} `json:"choices"`
+}
+
+func (p *ZAIProvider) Chat(ctx context.Context, messages []Message, functions []Function) (*Response, error) {
+	// Build request
+	req := zaiRequest{
+		Model:    p.model,
+		Messages: messages,
+		Stream:   false,
+	}
+
+	// Convert functions to tools format
+	if len(functions) > 0 {
+		req.Tools = make([]zaiTool, len(functions))
+		for i, fn := range functions {
+			req.Tools[i] = zaiTool{
+				Type: "function",
+				Function: zaiFunction{
+					Name:        fn.Name,
+					Description: fn.Description,
+					Parameters:  fn.Parameters,
+				},
+			}
+		}
+	}
+
+	// Marshal request
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.endpoint, bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+p.apiKey)
+
+	// Send request
+	resp, err := p.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Z.AI API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	// Parse response
+	var zaiResp zaiResponse
+	if err := json.Unmarshal(body, &zaiResp); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	if len(zaiResp.Choices) == 0 {
+		return nil, fmt.Errorf("no choices in response")
+	}
+
+	choice := zaiResp.Choices[0]
+	response := &Response{
+		Content: choice.Message.Content,
+	}
+
+	// Handle function calls
+	if len(choice.Message.ToolCalls) > 0 {
+		toolCall := choice.Message.ToolCalls[0]
+		args, err := ParseFunctionArguments(toolCall.Function.Arguments)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse function arguments: %w", err)
+		}
+
+		response.FunctionCall = &FunctionCall{
+			Name:      toolCall.Function.Name,
+			Arguments: args,
+		}
+	}
+
+	return response, nil
 }
 
 // Helper to parse function arguments

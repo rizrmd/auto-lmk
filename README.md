@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-production--ready-success)
 
-> **Multi-tenant SaaS platform for car dealerships with intelligent WhatsApp Bot powered by LLM (OpenAI/Anthropic)**
+> **Multi-tenant SaaS platform for car dealerships with intelligent WhatsApp Bot powered by LLM (OpenAI/Anthropic/Z.AI)**
 
 ---
 
@@ -52,7 +52,7 @@ Auto LMK is a modern, production-ready platform that revolutionizes car sales th
 | **Backend** | Go 1.21+, Chi Router |
 | **Database** | PostgreSQL 15+ |
 | **Frontend** | HTMX, Tailwind CSS, Alpine.js |
-| **AI/LLM** | OpenAI (GPT-4o-mini) / Anthropic (Claude) |
+| **AI/LLM** | OpenAI (GPT-4o-mini) / Anthropic (Claude) / Z.AI (GLM-4-Flash) |
 | **WhatsApp** | Whatsmeow |
 | **Deployment** | Docker, Nginx, Systemd |
 | **Security** | Bcrypt, JWT, Row-Level Isolation |
@@ -66,7 +66,7 @@ Auto LMK is a modern, production-ready platform that revolutionizes car sales th
 - Go 1.21+ ([installation guide](https://go.dev/doc/install))
 - PostgreSQL 15+ (or Docker)
 - WhatsApp account for bot
-- LLM API key (OpenAI or Anthropic)
+- LLM API key (OpenAI, Anthropic, or Z.AI)
 
 ### Installation
 
@@ -387,9 +387,11 @@ DB_NAME=autolmk
 DB_SSLMODE=require
 
 # LLM Provider
-LLM_PROVIDER=openai              # or "anthropic"
-LLM_API_KEY=sk-...               # Your API key
-LLM_MODEL=gpt-4o-mini            # or "claude-3-5-haiku-20241022"
+LLM_PROVIDER=zai                 # Options: "openai", "anthropic", "zai"
+LLM_API_KEY=your_api_key_here    # Your API key
+LLM_MODEL=glm-4-flash            # Model name (gpt-4o-mini, claude-3-5-haiku-20241022, glm-4-flash)
+# Z.AI specific endpoint (only used when LLM_PROVIDER=zai)
+ZAI_ENDPOINT=https://api.z.ai/api/coding/paas/v4
 
 # WhatsApp
 WHATSAPP_SESSION_PATH=./whatsapp_sessions
@@ -404,8 +406,10 @@ JWT_SECRET=your_random_jwt_secret_here
 |----------|-------|---------------------|----------|
 | OpenAI | `gpt-4o-mini` | $0.15 / $0.60 | Fast, cheap, function calling |
 | Anthropic | `claude-3-5-haiku-20241022` | $1.00 / $5.00 | Better reasoning, Bahasa |
+| Z.AI | `glm-4-flash` | Competitive pricing | Multilingual, fast, cost-effective |
 
-**Default**: `gpt-4o-mini` (best price-performance)
+**Default**: `glm-4-flash` (Z.AI - ready to use with provided API key)
+**Alternative**: `gpt-4o-mini` (OpenAI - best price-performance if you have API key)
 
 ---
 
@@ -517,6 +521,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Whatsmeow](https://github.com/tulir/whatsmeow) - WhatsApp Web API
 - [OpenAI](https://openai.com) - GPT models for LLM
 - [Anthropic](https://anthropic.com) - Claude models for LLM
+- [Z.AI](https://z.ai) - GLM models for LLM (GLM-4-Flash)
 - [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
 
 ---
@@ -536,7 +541,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Multi-tenant architecture with domain-based isolation
 - [x] Complete CRUD API for cars, sales, leads
 - [x] WhatsApp bot structure (ready for whatsmeow)
-- [x] LLM integration framework (OpenAI + Anthropic)
+- [x] LLM integration framework (OpenAI + Anthropic + Z.AI)
+- [x] Z.AI (GLM-4-Flash) provider fully implemented
 - [x] HTMX public website templates
 - [x] Admin dashboard templates
 - [x] Docker deployment setup

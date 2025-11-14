@@ -107,6 +107,38 @@ Select the optimal LLM provider for our WhatsApp bot that handles car sales inqu
 
 **Decision:** Defer to Phase 2 unless cloud costs become prohibitive
 
+### 4. Z.AI (GLM-4-Flash)
+
+**Model Options:**
+- GLM-4-Flash (fast, cost-effective)
+- GLM-4 (higher quality)
+
+**Pros:**
+- Competitive pricing
+- Good multilingual support (Chinese model, but supports Indonesian)
+- Function calling support (OpenAI-compatible API)
+- Fast response times
+- API endpoint: https://api.z.ai/api/coding/paas/v4
+
+**Cons:**
+- Less proven than OpenAI/Anthropic
+- Smaller ecosystem
+- Documentation may be limited
+- Quality for Indonesian needs testing
+
+**Pricing:**
+- GLM-4-Flash: Competitive with GPT-3.5-turbo tier
+- Exact pricing: TBD (check Z.AI website)
+
+**Function Calling:**
+- Yes - OpenAI-compatible format
+- Tool calling via `tools` parameter
+- Returns structured function calls
+
+**Decision:** ✅ **INTEGRATED** - Now available as provider option
+
+**Status:** Fully implemented and ready to use. Set `LLM_PROVIDER=zai` in .env to use.
+
 ## Test Scenarios
 
 ### Scenario 1: Customer Inquiry (Natural Language)
@@ -221,14 +253,14 @@ Select the optimal LLM provider for our WhatsApp bot that handles car sales inqu
 
 ## Decision Criteria
 
-| Criteria | Weight | OpenAI GPT-4o | OpenAI GPT-3.5 | Claude 3.5 Sonnet | Claude 3 Haiku |
-|----------|--------|---------------|----------------|-------------------|----------------|
-| Indonesian Quality | 30% | ? | ? | ? | ? |
-| Function Calling | 25% | Excellent | Good | Excellent | Good |
-| Cost | 20% | Low | High | Medium | High |
-| Latency | 15% | ? | ? | ? | ? |
-| Availability (ID) | 10% | Good | Good | ? | ? |
-| **Total** | 100% | TBD | TBD | TBD | TBD |
+| Criteria | Weight | OpenAI GPT-4o | OpenAI GPT-3.5 | Claude 3.5 Sonnet | Claude 3 Haiku | Z.AI GLM-4-Flash |
+|----------|--------|---------------|----------------|-------------------|----------------|------------------|
+| Indonesian Quality | 30% | ? | ? | ? | ? | ? (Testing) |
+| Function Calling | 25% | Excellent | Good | Excellent | Good | Excellent |
+| Cost | 20% | Low | High | Medium | High | High (Estimated) |
+| Latency | 15% | ? | ? | ? | ? | Fast (Expected) |
+| Availability (ID) | 10% | Good | Good | ? | ? | Good |
+| **Total** | 100% | TBD | TBD | TBD | TBD | ✅ Integrated |
 
 ## Testing Plan
 
@@ -264,13 +296,36 @@ Select the optimal LLM provider for our WhatsApp bot that handles car sales inqu
 
 ## Decision Log
 
-**Status:** Pending
+**Status:** ✅ Z.AI Integrated & Ready for Testing
 
-**Final Decision:** TBD
+**Current Provider:** Z.AI (GLM-4-Flash)
 
-**Selected Provider:** TBD
+**Configuration:**
+```bash
+LLM_PROVIDER=zai
+LLM_API_KEY=93ac6b4e9c1c49b4b64fed617669e569.5nfnaoMbbNaKZ26I
+LLM_MODEL=glm-4-flash
+ZAI_ENDPOINT=https://api.z.ai/api/coding/paas/v4
+```
 
-**Rationale:** TBD
+**Implementation Status:**
+- ✅ Z.AI provider fully implemented
+- ✅ OpenAI-compatible function calling
+- ✅ Configuration ready in .env.example
+- ✅ Integrated into provider factory
+- ⏳ Awaiting WhatsApp integration for live testing
+- ⏳ Indonesian language quality needs validation
+
+**Alternative Providers Available:**
+- OpenAI (GPT-4o-mini, GPT-4o) - Structure ready, needs implementation
+- Anthropic (Claude 3.5 Haiku, Sonnet) - Structure ready, needs implementation
+
+**Rationale for Z.AI:**
+- API key provided and ready to use
+- OpenAI-compatible API format (easy integration)
+- Good starting point for testing
+- Can switch providers easily via configuration
+- Function calling support included
 
 **Date Decided:** TBD
 

@@ -31,9 +31,10 @@ type DatabaseConfig struct {
 }
 
 type LLMConfig struct {
-	Provider string
-	APIKey   string
-	Model    string
+	Provider    string
+	APIKey      string
+	Model       string
+	ZAIEndpoint string // Z.AI specific endpoint
 }
 
 type WhatsAppConfig struct {
@@ -68,9 +69,10 @@ func Load() (*Config, error) {
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		LLM: LLMConfig{
-			Provider: getEnv("LLM_PROVIDER", ""),
-			APIKey:   getEnv("LLM_API_KEY", ""),
-			Model:    getEnv("LLM_MODEL", ""),
+			Provider:    getEnv("LLM_PROVIDER", ""),
+			APIKey:      getEnv("LLM_API_KEY", ""),
+			Model:       getEnv("LLM_MODEL", ""),
+			ZAIEndpoint: getEnv("ZAI_ENDPOINT", "https://api.z.ai/api/coding/paas/v4"),
 		},
 		WhatsApp: WhatsAppConfig{
 			SessionPath: getEnv("WHATSAPP_SESSION_PATH", "./whatsapp_sessions"),
