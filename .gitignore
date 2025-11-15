@@ -55,3 +55,4 @@ uploads/
 
 # WhatsApp session data
 whatsapp_sessions/
+tmp/

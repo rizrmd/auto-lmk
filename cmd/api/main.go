@@ -177,6 +177,7 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 	// Initialize handlers
 	tenantHandler := handler.NewTenantHandler(tenantRepo)
 	carHandler := handler.NewCarHandler(carRepo)
+	pageHandler := handler.NewPageHandler(carRepo, tenantRepo)
 
 	// WhatsApp handler (if WhatsApp client is initialized)
 	var whatsappHandler *handler.WhatsAppHandler
@@ -248,9 +249,19 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 		})
 	})
 
-	// Admin UI routes (serve HTML templates)
-	r.Get("/admin/whatsapp", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "templates/admin/whatsapp.html")
+	// Public frontend routes
+	r.Get("/", pageHandler.Home)
+	r.Get("/mobil", pageHandler.Cars)
+	r.Get("/mobil/{id}", pageHandler.CarDetail)
+	r.Get("/kontak", pageHandler.Contact)
+
+	// Admin frontend routes
+	r.Route("/admin", func(r chi.Router) {
+		r.Get("/", pageHandler.AdminDashboard)
+		r.Get("/dashboard", pageHandler.AdminDashboard)
+		r.Get("/cars", pageHandler.AdminCars)
+		r.Get("/leads", pageHandler.AdminLeads)
+		r.Get("/whatsapp", pageHandler.AdminWhatsApp)
 	})
 
 	// Suppress unused variable warnings (will be used when handlers are implemented)
