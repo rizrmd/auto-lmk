@@ -14,8 +14,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/riz/auto-lmk/internal/handler"
+	"github.com/riz/auto-lmk/internal/llm"
 	appMiddleware "github.com/riz/auto-lmk/internal/middleware"
 	"github.com/riz/auto-lmk/internal/repository"
+	"github.com/riz/auto-lmk/internal/service"
+	"github.com/riz/auto-lmk/internal/whatsapp"
 	"github.com/riz/auto-lmk/pkg/config"
 	"github.com/riz/auto-lmk/pkg/database"
 	"github.com/riz/auto-lmk/pkg/logger"
@@ -44,8 +47,28 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize LLM provider if configured
+	var llmProvider llm.Provider
+	if cfg.LLM.Provider != "" && cfg.LLM.APIKey != "" {
+		llmCfg := llm.Config{
+			Provider:    cfg.LLM.Provider,
+			APIKey:      cfg.LLM.APIKey,
+			Model:       cfg.LLM.Model,
+			ZAIEndpoint: cfg.LLM.ZAIEndpoint,
+		}
+
+		llmProvider, err = llm.NewProvider(llmCfg)
+		if err != nil {
+			slog.Warn("failed to initialize LLM provider", "error", err, "provider", cfg.LLM.Provider)
+		} else {
+			slog.Info("LLM provider initialized", "provider", cfg.LLM.Provider, "model", cfg.LLM.Model)
+		}
+	} else {
+		slog.Warn("LLM provider not configured, bot functionality will be disabled")
+	}
+
 	// Setup router
-	r := setupRouter(db)
+	r := setupRouter(cfg, db, llmProvider)
 
 	// Create HTTP server
 	srv := &http.Server{
@@ -83,7 +106,7 @@ func main() {
 	slog.Info("server stopped")
 }
 
-func setupRouter(db *database.DB) *chi.Mux {
+func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Middleware
@@ -120,6 +143,36 @@ func setupRouter(db *database.DB) *chi.Mux {
 	salesRepo := repository.NewSalesRepository(db.DB)
 	conversationRepo := repository.NewConversationRepository(db.DB)
 	leadRepo := repository.NewLeadRepository(db.DB)
+
+	// Initialize services
+	carService := service.NewCarService(carRepo)
+
+	// Initialize WhatsApp client if LLM is configured
+	var waClient *whatsapp.Client
+	var waService *service.WhatsAppService
+	if llmProvider != nil {
+		var err error
+		waClient, err = whatsapp.NewClient(salesRepo, cfg.DatabaseURL())
+		if err != nil {
+			slog.Error("failed to initialize WhatsApp client", "error", err)
+		} else {
+			slog.Info("WhatsApp client initialized")
+
+			// Initialize bot with adapters
+			convAdapter := llm.NewConversationRepoAdapter(conversationRepo)
+			carAdapter := llm.NewCarRepoAdapter(carRepo)
+			leadAdapter := llm.NewLeadRepoAdapter(leadRepo)
+			bot := llm.NewBot(llmProvider, convAdapter, carAdapter, leadAdapter)
+
+			// Initialize WhatsApp service
+			waService = service.NewWhatsAppService(waClient, bot, salesRepo, conversationRepo, carService, leadRepo)
+
+			// Set message handler
+			waClient.SetMessageHandler(waService.ProcessIncomingMessage)
+
+			slog.Info("WhatsApp bot service initialized")
+		}
+	}
 
 	// Initialize handlers
 	tenantHandler := handler.NewTenantHandler(tenantRepo)
@@ -178,10 +231,8 @@ func setupRouter(db *database.DB) *chi.Mux {
 		})
 	})
 
-	// Suppress unused variable warnings
-	_ = conversationRepo
-	_ = leadRepo
-	_ = salesRepo
+	// Suppress unused variable warnings (will be used when handlers are implemented)
+	_ = waService
 
 	return r
 }

@@ -9,13 +9,46 @@ import (
 // Bot handles car sales conversations
 type Bot struct {
 	provider Provider
-	// carRepo, leadRepo will be injected
+	convRepo ConversationRepository
+	carRepo  CarRepository
+	leadRepo LeadRepository
+}
+
+// Import internal model types for simpler interfaces
+type (
+	Conversation = struct{ ID int }
+	BotMessage   = struct {
+		SenderPhone string
+		MessageText string
+		Direction   string
+	}
+)
+
+// ConversationRepository interface for conversation operations
+type ConversationRepository interface {
+	GetOrCreate(ctx context.Context, senderPhone string, isSales bool) (*Conversation, error)
+	AddMessage(ctx context.Context, conversationID int, senderPhone, messageText, direction string) error
+	GetMessages(ctx context.Context, conversationID int, limit int) ([]*BotMessage, error)
+}
+
+// CarRepository interface for car operations
+type CarRepository interface {
+	SearchCarsForBot(ctx context.Context, filters map[string]interface{}) (interface{}, error)
+	GetCarWithDetails(ctx context.Context, carID int) (interface{}, error)
+}
+
+// LeadRepository interface for lead operations
+type LeadRepository interface {
+	Create(ctx context.Context, phoneNumber, name string, interestedCarID *int) (int, error)
 }
 
 // NewBot creates a new conversation bot
-func NewBot(provider Provider) *Bot {
+func NewBot(provider Provider, convRepo ConversationRepository, carRepo CarRepository, leadRepo LeadRepository) *Bot {
 	return &Bot{
 		provider: provider,
+		convRepo: convRepo,
+		carRepo:  carRepo,
+		leadRepo: leadRepo,
 	}
 }
 
@@ -23,19 +56,126 @@ func NewBot(provider Provider) *Bot {
 func (b *Bot) ProcessMessage(ctx context.Context, tenantID int, senderPhone, messageText string, isSales bool) (string, error) {
 	slog.Info("processing message", "tenant_id", tenantID, "sender", senderPhone, "is_sales", isSales)
 
-	// TODO: Implement conversation processing
-	// 1. Load conversation history
-	// 2. Build system prompt (different for sales vs customer)
-	// 3. Add user message
-	// 4. Call LLM with functions
-	// 5. If function call -> execute and call LLM again
-	// 6. Return response
-	// 7. Store conversation
+	// 1. Get conversation to access history
+	conv, err := b.convRepo.GetOrCreate(ctx, senderPhone, isSales)
+	if err != nil {
+		slog.Error("failed to get conversation", "error", err)
+		// Continue without history
+	}
 
-	systemPrompt := b.buildSystemPrompt(isSales)
-	slog.Debug("system prompt", "prompt", systemPrompt)
+	// 2. Build messages for LLM
+	messages := []Message{
+		{
+			Role:    "system",
+			Content: b.buildSystemPrompt(isSales),
+		},
+	}
 
-	return "", fmt.Errorf("bot processing not yet implemented")
+	// 3. Load recent conversation history (last 10 messages)
+	if conv != nil {
+		history, err := b.convRepo.GetMessages(ctx, conv.ID, 10)
+		if err != nil {
+			slog.Error("failed to load history", "error", err)
+		} else {
+			for _, msg := range history {
+				role := "user"
+				if msg.Direction == "outbound" {
+					role = "assistant"
+				}
+				messages = append(messages, Message{
+					Role:    role,
+					Content: msg.MessageText,
+				})
+			}
+		}
+	}
+
+	// 4. Add current user message
+	messages = append(messages, Message{
+		Role:    "user",
+		Content: messageText,
+	})
+
+	// 5. Call LLM with functions
+	functions := b.GetAvailableFunctions(isSales)
+	response, err := b.provider.Chat(ctx, messages, functions)
+	if err != nil {
+		return "", fmt.Errorf("LLM call failed: %w", err)
+	}
+
+	// 6. Handle function calls
+	if response.FunctionCall != nil {
+		slog.Info("function call requested", "function", response.FunctionCall.Name, "args", response.FunctionCall.Arguments)
+
+		// Execute function
+		result, err := b.executeFunction(ctx, response.FunctionCall.Name, response.FunctionCall.Arguments)
+		if err != nil {
+			slog.Error("function execution failed", "error", err)
+			return "Maaf, terjadi kesalahan saat memproses permintaan Anda.", nil
+		}
+
+		// Format result for LLM
+		resultText := fmt.Sprintf("Hasil fungsi %s: %v", response.FunctionCall.Name, result)
+
+		// Call LLM again with function result
+		messages = append(messages, Message{
+			Role:    "assistant",
+			Content: response.Content,
+		})
+		messages = append(messages, Message{
+			Role:    "function",
+			Content: resultText,
+		})
+
+		response, err = b.provider.Chat(ctx, messages, functions)
+		if err != nil {
+			return "", fmt.Errorf("LLM call after function failed: %w", err)
+		}
+	}
+
+	return response.Content, nil
+}
+
+// executeFunction executes a function called by the LLM
+func (b *Bot) executeFunction(ctx context.Context, functionName string, arguments map[string]interface{}) (interface{}, error) {
+	switch functionName {
+	case "searchCars":
+		return b.carRepo.SearchCarsForBot(ctx, arguments)
+
+	case "getCarDetails":
+		carID, ok := arguments["car_id"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("invalid car_id")
+		}
+		return b.carRepo.GetCarWithDetails(ctx, int(carID))
+
+	case "createLead":
+		phoneNumber, ok := arguments["phone_number"].(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid phone_number")
+		}
+
+		name, _ := arguments["name"].(string)
+
+		var carID *int
+		if cid, ok := arguments["interested_car_id"].(float64); ok {
+			id := int(cid)
+			carID = &id
+		}
+
+		leadID, err := b.leadRepo.Create(ctx, phoneNumber, name, carID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create lead: %w", err)
+		}
+
+		return map[string]interface{}{
+			"lead_id": leadID,
+			"message": "Lead berhasil dibuat",
+		}, nil
+
+	default:
+		return nil, fmt.Errorf("unknown function: %s", functionName)
+	}
 }
 
 // buildSystemPrompt creates system prompt based on user type

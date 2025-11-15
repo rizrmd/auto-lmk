@@ -540,9 +540,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [x] Multi-tenant architecture with domain-based isolation
 - [x] Complete CRUD API for cars, sales, leads
-- [x] WhatsApp bot structure (ready for whatsmeow)
+- [x] **WhatsApp bot fully integrated with Whatsmeow**
+- [x] **QR code pairing for WhatsApp**
+- [x] **Message sending/receiving with event handling**
 - [x] LLM integration framework (OpenAI + Anthropic + Z.AI)
-- [x] Z.AI (GLM-4-Flash) provider fully implemented
+- [x] **Z.AI (GLM-4-Flash) provider with function calling**
+- [x] **LLM Bot with conversation context & history**
+- [x] **Function execution (searchCars, getCarDetails, createLead)**
 - [x] HTMX public website templates
 - [x] Admin dashboard templates
 - [x] Docker deployment setup
@@ -550,11 +554,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 🚧 In Progress (v1.1)
 
-- [ ] Real Whatsmeow integration with QR pairing
+- [ ] WhatsApp admin panel (pairing UI, status monitoring)
 - [ ] Complete admin car edit/create forms
 - [ ] File upload for car photos
 - [ ] User authentication (JWT implementation)
 - [ ] Root admin dashboard
+- [ ] Testing with real WhatsApp numbers
 
 ### 🔮 Planned (v2.0)
 
