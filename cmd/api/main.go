@@ -178,6 +178,12 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 	tenantHandler := handler.NewTenantHandler(tenantRepo)
 	carHandler := handler.NewCarHandler(carRepo)
 
+	// WhatsApp handler (if WhatsApp client is initialized)
+	var whatsappHandler *handler.WhatsAppHandler
+	if waClient != nil {
+		whatsappHandler = handler.NewWhatsAppHandler(waClient, tenantRepo)
+	}
+
 	// API routes
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +234,23 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 				// r.Get("/", conversationHandler.List)
 				// r.Get("/{id}", conversationHandler.Get)
 			})
+
+			// WhatsApp admin routes (tenant-scoped)
+			if whatsappHandler != nil {
+				r.Route("/admin/whatsapp", func(r chi.Router) {
+					r.Get("/status", whatsappHandler.GetStatus)
+					r.Post("/pair", whatsappHandler.InitiatePairing)
+					r.Post("/disconnect", whatsappHandler.Disconnect)
+					r.Post("/test", whatsappHandler.SendTestMessage)
+					r.Get("/qr/{tenant_id}", whatsappHandler.GetQRCodeImage)
+				})
+			}
 		})
+	})
+
+	// Admin UI routes (serve HTML templates)
+	r.Get("/admin/whatsapp", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/admin/whatsapp.html")
 	})
 
 	// Suppress unused variable warnings (will be used when handlers are implemented)

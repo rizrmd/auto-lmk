@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Settings - Auto LMK Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-50" x-data="{
+    status: 'loading',
+    isConnected: false,
+    qrCode: null,
+    showTestModal: false
+}" x-init="
+    // Load initial status
+    fetch('/api/admin/whatsapp/status')
+        .then(r => r.json())
+        .then(data => {
+            isConnected = data.is_connected;
+            status = data.pairing_status || 'unpaired';
+        })
+        .catch(() => status = 'error');
+">
+
+<div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">WhatsApp Settings</h1>
+                    <p class="mt-1 text-sm text-gray-500">Manage your WhatsApp bot connection</p>
+                </div>
+                <a href="/admin" class="text-blue-600 hover:text-blue-800">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Connection Status Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Connection Status</h2>
+                <button
+                    @click="fetch('/api/admin/whatsapp/status').then(r => r.json()).then(data => { isConnected = data.is_connected; status = data.pairing_status; })"
+                    class="text-sm text-blue-600 hover:text-blue-800">
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <!-- Status Indicator -->
+                <div class="flex-shrink-0">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center"
+                         :class="isConnected ? 'bg-green-100' : 'bg-gray-100'">
+                        <svg x-show="isConnected" class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <svg x-show="!isConnected" class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Status Info -->
+                <div class="flex-1">
+                    <h3 class="text-lg font-medium" :class="isConnected ? 'text-green-600' : 'text-gray-600'">
+                        <span x-show="isConnected">✅ Connected</span>
+                        <span x-show="!isConnected">❌ Not Connected</span>
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        <span x-show="isConnected">Your WhatsApp bot is active and ready to receive messages</span>
+                        <span x-show="!isConnected">Connect your WhatsApp to start receiving messages</span>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Status: <span x-text="status"></span></p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex-shrink-0">
+                    <button
+                        x-show="!isConnected"
+                        @click="
+                            qrCode = null;
+                            fetch('/api/admin/whatsapp/pair', { method: 'POST' })
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.qr_code && data.qr_code !== 'PAIRED_SUCCESSFULLY') {
+                                        qrCode = data.qr_code;
+                                    } else if (data.status === 'paired') {
+                                        isConnected = true;
+                                        alert('WhatsApp paired successfully!');
+                                    }
+                                })
+                                .catch(err => alert('Failed to initiate pairing: ' + err));
+                        "
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        📱 Connect WhatsApp
+                    </button>
+
+                    <button
+                        x-show="isConnected"
+                        @click="
+                            if (confirm('Are you sure you want to disconnect WhatsApp?')) {
+                                fetch('/api/admin/whatsapp/disconnect', { method: 'POST' })
+                                    .then(r => r.json())
+                                    .then(() => {
+                                        isConnected = false;
+                                        status = 'disconnected';
+                                    })
+                                    .catch(err => alert('Failed to disconnect: ' + err));
+                            }
+                        "
+                        class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        🔌 Disconnect
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Display -->
+        <div x-show="qrCode" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Scan QR Code</h2>
+            <div class="text-center">
+                <div class="inline-block p-4 bg-white border-4 border-green-500 rounded-lg">
+                    <div id="qrcode" class="w-64 h-64 bg-gray-100 flex items-center justify-center">
+                        <p class="text-gray-500">Loading QR code...</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-gray-600">
+                    1. Open WhatsApp on your phone<br>
+                    2. Tap Menu (⋮) → Linked Devices<br>
+                    3. Tap "Link a Device"<br>
+                    4. Scan this QR code
+                </p>
+                <p class="mt-2 text-xs text-gray-500">
+                    Note: QR code expires after 60 seconds. Refresh if needed.
+                </p>
+            </div>
+        </div>
+
+        <!-- Test Message Section -->
+        <div x-show="isConnected" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Test Bot</h2>
+            <p class="text-sm text-gray-600 mb-4">Send a test message to verify your bot is working correctly</p>
+
+            <div class="flex space-x-4">
+                <input
+                    type="tel"
+                    x-model="testPhone"
+                    placeholder="Phone number (e.g., 081234567890)"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button
+                    @click="
+                        if (!testPhone) {
+                            alert('Please enter a phone number');
+                            return;
+                        }
+                        fetch('/api/admin/whatsapp/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phone_number: testPhone })
+                        })
+                        .then(r => r.json())
+                        .then(() => alert('Test message sent!'))
+                        .catch(err => alert('Failed to send: ' + err));
+                    "
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    📤 Send Test Message
+                </button>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-blue-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 mb-3">ℹ️ How WhatsApp Bot Works</h3>
+            <div class="space-y-2 text-sm text-blue-800">
+                <p><strong>For Customers:</strong> They can search for cars naturally in Bahasa Indonesia</p>
+                <p><strong>For Sales Team:</strong> Registered sales can access full inventory and create leads</p>
+                <p><strong>AI Powered:</strong> Uses Z.AI (GLM-4-Flash) to understand and respond intelligently</p>
+                <p><strong>Functions Available:</strong> Search cars, get details, create leads automatically</p>
+            </div>
+        </div>
+
+        <!-- Connection Info -->
+        <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                        <strong>Important:</strong> Keep this page open while scanning the QR code.
+                        If connection drops, you may need to re-pair your WhatsApp.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Convert QR code text to image using a QR library
+// For now, just display the text - in production, use qrcode.js or similar
+document.addEventListener('alpine:init', () => {
+    // Watch for qrCode changes
+    Alpine.effect(() => {
+        const qr = Alpine.store('qrCode');
+        if (qr) {
+            // TODO: Generate actual QR image from text
+            // For now, display as text
+            const qrDiv = document.getElementById('qrcode');
+            if (qrDiv) {
+                qrDiv.innerHTML = `<pre class="text-xs break-all">${qr}</pre>`;
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>
