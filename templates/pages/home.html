@@ -1,122 +1,344 @@
-{{define "content"}}
-<!-- Hero Section -->
-<div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div class="text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">
-                Cari Mobil Impian Anda
-            </h1>
-            <p class="text-xl md:text-2xl mb-8">
-                Dengan bantuan WhatsApp Bot yang cerdas dan responsif
-            </p>
-            <a href="https://wa.me/{{.WhatsAppNumber}}" target="_blank"
-               class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold inline-flex items-center space-x-2">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                </svg>
-                <span>Chat di WhatsApp</span>
-            </a>
-        </div>
-    </div>
-</div>
+{{define "home.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - {{.TenantName}}</title>
 
-<!-- Featured Cars -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h2 class="text-3xl font-bold text-gray-900 mb-8">Mobil Pilihan</h2>
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="description" content="{{.TenantName}} - Dealer mobil bekas terpercaya di Indonesia. Jual mobil berkualitas dengan harga terbaik, garansi mesin 1 tahun, test drive gratis, & proses kredit mudah. Temukan Toyota, Honda, Mitsubishi, dan lainnya dengan kondisi prima.">
+    <meta name="keywords" content="dealer mobil bekas, jual mobil bekas, beli mobil berkualitas, mobil bekas terpercaya, {{.TenantName}}, Toyota bekas, Honda bekas, Mitsubishi bekas, mobil garansi, test drive mobil, kredit mobil bekas, mobil bekas dijual, harga mobil bekas, showroom mobil">
+    <meta name="author" content="{{.TenantName}}">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="language" content="id-ID">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {{range .FeaturedCars}}
-        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-            <div class="h-48 bg-gray-200 relative">
-                {{if .Photos}}
-                <img src="{{index .Photos 0}}" alt="{{.Brand}} {{.Model}}" class="w-full h-full object-cover">
-                {{else}}
-                <div class="flex items-center justify-center h-full text-gray-400">
-                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{.BaseURL}}/" />
+
+    <!-- Enhanced Open Graph -->
+    <meta property="og:title" content="{{.TenantName}} - Dealer Mobil Bekas Terpercaya | Jual & Beli Mobil Berkualitas">
+    <meta property="og:description" content="Dealer mobil bekas terpercaya dengan koleksi Toyota, Honda, Mitsubishi berkualitas. Garansi mesin 1 tahun, test drive gratis, & proses kredit mudah. Temukan mobil impian Anda sekarang!">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{.TenantName}}">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:url" content="{{.BaseURL}}">
+    <meta property="og:image" content="{{.LogoPath}}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{.TenantName}} - Dealer Mobil Bekas Terpercaya">
+
+    <!-- Enhanced Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{.TenantName}} - Dealer Mobil Bekas Terpercaya">
+    <meta name="twitter:description" content="Jual & beli mobil bekas berkualitas dengan garansi 1 tahun. Test drive gratis & kredit mudah. Toyota, Honda, Mitsubishi tersedia!">
+    <meta name="twitter:image" content="{{.LogoPath}}">
+    <meta name="twitter:site" content="@{{.TwitterHandle | default "autolmk"}}">
+
+    <!-- Local Business Meta Tags -->
+    <meta name="geo.region" content="ID">
+    <meta name="geo.placename" content="{{.ShowroomAddress | default "Indonesia"}}">
+    <meta name="ICBM" content="{{.GeoCoordinates | default "-6.2088,106.8456"}}">
+    <meta name="business:contact_data:street_address" content="{{.ShowroomAddress | default ""}}">
+    <meta name="business:contact_data:locality" content="{{.TenantLocation | default "Indonesia"}}">
+    <meta name="business:contact_data:country" content="Indonesia">
+    {{if .ShowroomPhone}}<meta name="business:contact_data:phone_number" content="{{.ShowroomPhone}}">{{end}}
+    {{if .ShowroomEmail}}<meta name="business:contact_data:email" content="{{.ShowroomEmail}}">{{end}}
+
+    <!-- Favicon -->
+    {{if .FaviconPath}}
+    <link rel="icon" type="image/x-icon" href="{{.FaviconPath}}">
+    {{end}}
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/static/css/output.css">
+
+    <!-- Basecoat UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/basecoat.cdn.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/js/all.min.js" defer></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+
+    <!-- Organization Schema Markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{.TenantName}}",
+        "url": "{{.BaseURL}}",
+        "logo": "{{.LogoPath}}",
+        "description": "Dealer mobil bekas terpercaya dengan koleksi mobil berkualitas dan harga terbaik di Indonesia",
+        {{if .ShowroomAddress}}"address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{.ShowroomAddress}}",
+            "addressLocality": "{{.TenantName}}",
+            "addressCountry": "ID"
+        },{{end}}
+        {{if .ShowroomPhone}}"telephone": "{{.ShowroomPhone}}",{{end}}
+        {{if .ShowroomEmail}}"email": "{{.ShowroomEmail}}",{{end}}
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "{{.WhatsAppNumber}}",
+            "contactType": "customer service",
+            "availableLanguage": ["Indonesian", "English"],
+            "hoursAvailable": [
+                "Mo-Sa 09:00-18:00",
+                "Su 10:00-16:00"
+            ]
+        },
+        "sameAs": [
+            {{if .SocialMediaFacebook}}"https://facebook.com/{{.SocialMediaFacebook}}"{{end}},
+            {{if .SocialMediaInstagram}}"https://instagram.com/{{.SocialMediaInstagram}}"{{end}},
+            {{if .SocialMediaTwitter}}"https://twitter.com/{{.SocialMediaTwitter}}"{{end}}
+        ],
+        "areaServed": {
+            "@type": "Country",
+            "name": "Indonesia"
+        },
+        "founder": {
+            "@type": "Person",
+            "name": "{{.TenantName}} Founder"
+        },
+        "foundingDate": "2020",
+        "numberOfEmployees": "11-50",
+        "knowsLanguage": ["Indonesian", "English"],
+        "legalName": "{{.TenantName}}",
+        "taxID": "{{.TenantName}}",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Mobil Bekas Catalog",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "Mobil Bekas"
+                    },
+                    "availability": "https://schema.org/InStock"
+                }
+            ]
+        }
+    }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation with Basecoat -->
+    {{template "nav" .}}
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <div class="hero-gradient text-white section-lg">
+            <div class="content-wrapper">
+                <div class="text-center max-w-5xl mx-auto">
+                    <h1>
+                        Cari Mobil Impian Anda
+                    </h1>
+                    <p class="text-xl mb-8">
+                        Jelajahi koleksi mobil bekas pilihan kami dengan kualitas terjamin
+                    </p>
+
+                    <!-- Enhanced Search Bar -->
+                    <div class="search-container">
+                        <form action="/mobil" method="get">
+                            <svg class="search-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <input
+                                type="text"
+                                name="q"
+                                placeholder="Cari merek, model, atau kode mobil..."
+                                class="search-input"
+                            >
+                        </form>
+                    </div>
+                    </div>
+
+                    <!-- Quick Filters -->
+                    <div class="mt-8 flex flex-wrap justify-center gap-2">
+                        <a href="/mobil" class="btn btn-outline btn-ghost text-white border-white hover:bg-white hover:text-purple-700">
+                            Semua Mobil
+                        </a>
+                        <a href="/mobil?max_price=200000000" class="btn btn-outline btn-ghost text-white border-white hover:bg-white hover:text-purple-700">
+                            Di Bawah 200 Juta
+                        </a>
+                        <a href="/mobil?transmission=AT" class="btn btn-outline btn-ghost text-white border-white hover:bg-white hover:text-purple-700">
+                            Automatic
+                        </a>
+                        <a href="/mobil?transmission=MT" class="btn btn-outline btn-ghost text-white border-white hover:bg-white hover:text-purple-700">
+                            Manual
+                        </a>
+                    </div>
                 </div>
-                {{end}}
-                {{if .IsFeatured}}
-                <div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded text-sm font-semibold">
-                    Pilihan
-                </div>
-                {{end}}
             </div>
-            <div class="p-4">
-                <h3 class="text-xl font-bold text-gray-900">{{.Brand}} {{.Model}}</h3>
-                <p class="text-gray-600 text-sm">{{.Year}} • {{.Transmission}} • {{.FuelType}}</p>
-                <p class="text-2xl font-bold text-blue-600 mt-2">Rp {{.FormattedPrice}}</p>
-                <div class="mt-4 flex space-x-2">
-                    <a href="/mobil/{{.ID}}" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-center py-2 rounded">
-                        Lihat Detail
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Kualitas Terjamin</h3>
+                    <p class="text-gray-600">Setiap mobil diperiksa secara menyeluruh untuk ketenangan pikiran Anda</p>
+                </div>
+
+                <div class="card text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Harga Terbaik</h3>
+                    <p class="text-gray-600">Harga kompetitif dengan biaya transparan tanpa biaya tersembunyi</p>
+                </div>
+
+                <div class="card text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Pilihan Lengkap</h3>
+                    <p class="text-gray-600">Beragam pilihan merek dan model untuk memenuhi kebutuhan Anda</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Cars Section -->
+        <div class="bg-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900">Mobil Pilihan</h2>
+                        <p class="text-gray-600 mt-1">Koleksi terbaik dari kendaraan kami</p>
+                    </div>
+                    <a href="/mobil" class="btn btn-primary">Lihat Semua →</a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-cars">
+                    <!-- Cars will be loaded via HTMX -->
+                    <div class="text-center py-12 col-span-full">
+                        <div class="spinner"></div>
+                        <p class="text-gray-500 mt-4">Memuat mobil pilihan...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold mb-4">Siap Menemukan Mobil Impian Anda?</h2>
+                <p class="text-lg mb-8 text-purple-100">Jelajahi koleksi lengkap kami atau hubungi kami untuk bantuan personal</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/mobil" class="btn bg-white text-purple-600 hover:bg-gray-100">
+                        Lihat Semua Mobil
                     </a>
-                    <a href="https://wa.me/{{$.WhatsAppNumber}}?text=Saya%20tertarik%20dengan%20{{.Brand}}%20{{.Model}}"
-                       target="_blank"
-                       class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded">
-                        Tanya via WA
+                    <a href="/kontak" class="btn btn-outline border-white text-white hover:bg-white hover:text-purple-600">
+                        Hubungi Kami
                     </a>
                 </div>
             </div>
         </div>
-        {{end}}
-    </div>
+    </main>
 
-    <div class="text-center mt-8">
-        <a href="/mobil" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg inline-block font-semibold">
-            Lihat Semua Mobil
-        </a>
-    </div>
-</div>
+    <!-- Footer -->
+    {{template "footer" .}}
 
-<!-- Features -->
-<div class="bg-gray-100 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Kenapa Pilih Kami?</h2>
+    <!-- WhatsApp Button -->
+    {{template "whatsapp-button" .}}
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <div class="bg-blue-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold mb-2">WhatsApp Bot Cerdas</h3>
-                <p class="text-gray-600">Cari mobil dengan mudah melalui chat WhatsApp yang responsif 24/7</p>
-            </div>
+    <!-- Load Featured Cars -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load featured cars via HTMX
+            const featuredCarsContainer = document.getElementById('featured-cars');
 
-            <div class="text-center">
-                <div class="bg-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Terpercaya</h3>
-                <p class="text-gray-600">Mobil berkualitas dengan dokumen lengkap dan garansi</p>
-            </div>
+            fetch('/api/cars?limit=6&featured=true')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data && data.data.length > 0) {
+                        displayFeaturedCars(data.data);
+                    } else {
+                        // Load all cars if no featured cars
+                        fetch('/api/cars?limit=6')
+                            .then(response => response.json())
+                            .then(allData => {
+                                if (allData.data) {
+                                    displayFeaturedCars(allData.data);
+                                } else {
+                                    showNoCarsMessage();
+                                }
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading featured cars:', error);
+                    showNoCarsMessage();
+                });
 
-            <div class="text-center">
-                <div class="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Proses Cepat</h3>
-                <p class="text-gray-600">Proses pembelian yang mudah dan cepat dengan bantuan tim profesional</p>
-            </div>
-        </div>
-    </div>
-</div>
+            function displayFeaturedCars(cars) {
+                const html = cars.map(car => createCarCard(car)).join('');
+                featuredCarsContainer.innerHTML = html;
+            }
 
-<!-- CTA Section -->
-<div class="bg-blue-600 text-white py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold mb-4">Siap Mencari Mobil Impian Anda?</h2>
-        <p class="text-xl mb-8">Hubungi kami sekarang melalui WhatsApp!</p>
-        <a href="https://wa.me/{{.WhatsAppNumber}}" target="_blank"
-           class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold inline-block">
-            Chat Sekarang
-        </a>
-    </div>
-</div>
+            function createCarCard(car) {
+                const price = car.price ? new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(car.price) : 'Harga Negosiasi';
+
+                return `
+                    <div class="card hover:shadow-lg transition-shadow">
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900">${car.brand} ${car.model}</h3>
+                            <p class="text-2xl font-bold text-blue-600 mt-1">${price}</p>
+                            <div class="flex gap-2 mt-2">
+                                <span class="badge badge-info">${car.year}</span>
+                                <span class="badge badge-secondary">${car.transmission}</span>
+                            </div>
+                            <a href="/mobil/${car.id}" class="btn btn-primary w-full mt-4">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function showNoCarsMessage() {
+                featuredCarsContainer.innerHTML = `
+                    <div class="text-center py-12 col-span-full">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p class="text-gray-500">Belum ada mobil tersedia.</p>
+                        <a href="/mobil" class="btn btn-primary mt-4">Lihat Semua Mobil</a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
 {{end}}
