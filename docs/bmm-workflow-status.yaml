@@ -1,0 +1,47 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-11-15"
+project: "auto-lmk"
+project_type: "software"
+selected_track: "enterprise"
+field_type: "brownfield"
+workflow_path: "enterprise-brownfield.yaml"
+workflow_status: |
+  # Prerequisite - Documentation
+  document-project: docs/index.md  # ✅ Completed 2025-11-15
+
+  # Phase 0: Discovery
+  brainstorm-project: skipped  # Brownfield, requirements clarified directly
+  research: skipped  # Existing documentation sufficient
+
+  # Phase 1: Planning
+  prd: docs/PRD-Admin-Tenant.md  # ✅ Completed 2025-11-15
+  create-epics-and-stories: docs/epics.md  # ✅ Completed 2025-11-15 (6 epics, 28 stories)
+  validate-prd: recommended  # agent: pm
+  create-design: recommended  # agent: ux-designer
+
+  # Phase 2: Solutioning
+  create-architecture: docs/architecture.md  # ✅ Completed 2025-11-15
+  test-design: docs/test-design-system.md  # ✅ Completed 2025-11-15
+  create-security-architecture: optional  # agent: architect
+  create-devops-strategy: optional  # agent: architect
+  validate-architecture: recommended  # agent: architect
+   solutioning-gate-check: docs/implementation-readiness-report-2025-11-15.md  # ✅ Completed 2025-11-15
+
+  # Phase 3: Implementation
+  sprint-planning: required  # agent: sm

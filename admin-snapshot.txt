@@ -1,0 +1,224 @@
+uid=11_0 RootWebArea "Dashboard Admin - Admin Dashboard" url="http://localhost:8080/admin"
+  uid=11_1 ignored
+    uid=11_2 ignored
+      uid=11_3 generic
+        uid=11_4 ignored
+          uid=11_5 ignored
+            uid=11_6 heading "Auto LMK" level="1"
+              uid=11_7 StaticText "Auto LMK"
+                uid=11_8 InlineTextBox "Auto LMK"
+            uid=11_9 button
+              uid=11_10 image
+          uid=11_11 navigation
+            uid=11_12 link "📊 Dashboard" url="http://localhost:8080/admin"
+              uid=11_13 image
+              uid=11_14 StaticText "📊 Dashboard"
+                uid=11_15 InlineTextBox "📊 Dashboard"
+            uid=11_16 link "🚗 Mobil" url="http://localhost:8080/admin/cars"
+              uid=11_17 image
+              uid=11_18 StaticText "🚗 Mobil"
+                uid=11_19 InlineTextBox "🚗 Mobil"
+            uid=11_20 link "👥 Tim Sales" url="http://localhost:8080/admin/sales"
+              uid=11_21 image
+              uid=11_22 StaticText "👥 Tim Sales"
+                uid=11_23 InlineTextBox "👥 Tim Sales"
+            uid=11_24 link "💬 Percakapan" url="http://localhost:8080/admin/conversations"
+              uid=11_25 image
+              uid=11_26 StaticText "💬 Percakapan"
+                uid=11_27 InlineTextBox "💬 Percakapan"
+            uid=11_28 link "📊 Analitik" url="http://localhost:8080/admin/analytics"
+              uid=11_29 image
+              uid=11_30 StaticText "📊 Analitik"
+                uid=11_31 InlineTextBox "📊 Analitik"
+            uid=11_32 link "📝 Blog" url="http://localhost:8080/admin/blog"
+              uid=11_33 image
+              uid=11_34 StaticText "📝 Blog"
+                uid=11_35 InlineTextBox "📝 Blog"
+            uid=11_36 ignored
+              uid=11_37 link "📱 WhatsApp Bot" url="http://localhost:8080/admin/whatsapp"
+                uid=11_38 image
+                uid=11_39 StaticText "📱 WhatsApp Bot"
+                  uid=11_40 InlineTextBox "📱 WhatsApp Bot"
+              uid=11_41 link "🎨 Branding" url="http://localhost:8080/admin/branding"
+                uid=11_42 image
+                uid=11_43 ignored
+                  uid=11_44 StaticText "🎨"
+                    uid=11_45 InlineTextBox "🎨"
+                uid=11_46 StaticText "Branding"
+                  uid=11_47 InlineTextBox "Branding"
+              uid=11_48 link "📍 Showroom" url="http://localhost:8080/admin/showroom"
+                uid=11_49 image
+                uid=11_50 ignored
+                  uid=11_51 StaticText "📍"
+                    uid=11_52 InlineTextBox "📍"
+                uid=11_53 StaticText "Showroom"
+                  uid=11_54 InlineTextBox "Showroom"
+              uid=11_55 link "⚙️ Pengaturan" url="http://localhost:8080/admin/settings"
+                uid=11_56 image
+                uid=11_57 ignored
+                  uid=11_58 StaticText "⚙️"
+                    uid=11_59 InlineTextBox "⚙️"
+                uid=11_60 StaticText "Pengaturan"
+                  uid=11_61 InlineTextBox "Pengaturan"
+          uid=11_62 generic
+            uid=11_63 ignored
+              uid=11_64 ignored
+                uid=11_65 image
+              uid=11_66 ignored
+                uid=11_67 paragraph
+                  uid=11_68 StaticText "Admin"
+                    uid=11_69 InlineTextBox "Admin"
+                uid=11_70 paragraph
+                  uid=11_71 StaticText "Admin"
+                    uid=11_72 InlineTextBox "Admin"
+              uid=11_73 link url="http://localhost:8080/logout"
+                uid=11_74 image
+        uid=11_75 ignored
+          uid=11_76 banner
+            uid=11_77 ignored
+              uid=11_78 button
+                uid=11_79 image
+              uid=11_80 ignored
+                uid=11_81 heading "Dashboard Admin" level="1"
+                  uid=11_82 StaticText "Dashboard Admin"
+                    uid=11_83 InlineTextBox "Dashboard Admin"
+                uid=11_84 ignored
+                  uid=11_85 link url="http://localhost:8080/"
+                    uid=11_86 image
+                  uid=11_87 button
+                    uid=11_88 image
+                    uid=11_89 ignored
+          uid=11_90 main
+            uid=11_91 ignored
+              uid=11_92 ignored
+                uid=11_93 ignored
+                  uid=11_94 ignored
+                    uid=11_95 heading "Dashboard" level="1"
+                      uid=11_96 StaticText "Dashboard"
+                        uid=11_97 InlineTextBox "Dashboard"
+                    uid=11_98 paragraph
+                      uid=11_99 StaticText "Monitor your business performance and manage operations"
+                        uid=11_100 InlineTextBox "Monitor your business performance and "
+                        uid=11_101 InlineTextBox "manage operations"
+                  uid=11_102 ignored
+                    uid=11_103 link "Add Car" url="http://localhost:8080/admin/cars/new"
+                      uid=11_104 image
+                      uid=11_105 StaticText "Add Car"
+                        uid=11_106 InlineTextBox "Add Car"
+                uid=11_107 ignored
+                  uid=11_108 generic
+                    uid=11_109 ignored
+                      uid=11_110 ignored
+                        uid=11_111 ignored
+                          uid=11_112 image
+                        uid=11_113 ignored
+                          uid=11_114 paragraph
+                            uid=11_115 StaticText "WhatsApp Bot"
+                              uid=11_116 InlineTextBox "WhatsApp Bot"
+                          uid=11_117 paragraph
+                            uid=11_118 StaticText "Disconnected"
+                              uid=11_119 InlineTextBox "Disconnected"
+                          uid=11_120 paragraph
+                            uid=11_121 StaticText "Not paired"
+                              uid=11_122 InlineTextBox "Not paired"
+                      uid=11_123 image
+                  uid=11_124 generic
+                    uid=11_125 ignored
+                      uid=11_126 ignored
+                        uid=11_127 ignored
+                          uid=11_128 image
+                        uid=11_129 ignored
+                          uid=11_130 paragraph
+                            uid=11_131 StaticText "Conversations"
+                              uid=11_132 InlineTextBox "Conversations"
+                          uid=11_133 paragraph
+                            uid=11_134 StaticText "0"
+                              uid=11_135 InlineTextBox "0"
+                          uid=11_136 paragraph
+                            uid=11_137 StaticText "Last 30 days"
+                              uid=11_138 InlineTextBox "Last 30 days"
+                      uid=11_139 image
+                  uid=11_140 generic
+                    uid=11_141 ignored
+                      uid=11_142 ignored
+                        uid=11_143 ignored
+                          uid=11_144 image
+                        uid=11_145 ignored
+                          uid=11_146 paragraph
+                            uid=11_147 StaticText "Sales Team"
+                              uid=11_148 InlineTextBox "Sales "
+                              uid=11_149 InlineTextBox "Team"
+                          uid=11_150 paragraph
+                            uid=11_151 StaticText "0"
+                              uid=11_152 InlineTextBox "0"
+                          uid=11_153 paragraph
+                            uid=11_154 StaticText "Active members"
+                              uid=11_155 InlineTextBox "Active "
+                              uid=11_156 InlineTextBox "members"
+                      uid=11_157 image
+                  uid=11_158 generic
+                    uid=11_159 ignored
+                      uid=11_160 ignored
+                        uid=11_161 ignored
+                          uid=11_162 image
+                        uid=11_163 ignored
+                          uid=11_164 paragraph
+                            uid=11_165 StaticText "Inventory"
+                              uid=11_166 InlineTextBox "Inventory"
+                          uid=11_167 ignored
+                          uid=11_168 paragraph
+                            uid=11_169 StaticText "Cars in catalog"
+                              uid=11_170 InlineTextBox "Cars in "
+                              uid=11_171 InlineTextBox "catalog"
+                      uid=11_172 image
+                uid=11_173 ignored
+                  uid=11_174 ignored
+                    uid=11_175 heading "Recent Conversations" level="2"
+                      uid=11_176 StaticText "Recent Conversations"
+                        uid=11_177 InlineTextBox "Recent Conversations"
+                    uid=11_178 link "View All →" url="http://localhost:8080/admin/conversations"
+                      uid=11_179 StaticText "View All →"
+                        uid=11_180 InlineTextBox "View All →"
+                  uid=11_181 ignored
+                    uid=11_182 ignored
+                      uid=11_183 image
+                      uid=11_184 paragraph
+                        uid=11_185 StaticText "No conversations yet. Conversations will appear after customers or sales send messages via WhatsApp."
+                          uid=11_186 InlineTextBox "No conversations yet. Conversations will appear "
+                          uid=11_187 InlineTextBox "after customers or sales send messages via "
+                          uid=11_188 InlineTextBox "WhatsApp."
+                uid=11_189 ignored
+                  uid=11_190 ignored
+                    uid=11_191 heading "Quick Actions" level="3"
+                      uid=11_192 StaticText "Quick Actions"
+                        uid=11_193 InlineTextBox "Quick Actions"
+                  uid=11_194 ignored
+                    uid=11_195 ignored
+                      uid=11_196 link "Add Car Add new vehicle to inventory" url="http://localhost:8080/admin/cars/new"
+                        uid=11_197 image
+                        uid=11_198 ignored
+                          uid=11_199 paragraph
+                            uid=11_200 StaticText "Add Car"
+                              uid=11_201 InlineTextBox "Add Car"
+                          uid=11_202 paragraph
+                            uid=11_203 StaticText "Add new vehicle to inventory"
+                              uid=11_204 InlineTextBox "Add new vehicle to inventory"
+                      uid=11_205 link "Add Sales Invite team member" url="http://localhost:8080/admin/sales/new"
+                        uid=11_206 image
+                        uid=11_207 ignored
+                          uid=11_208 paragraph
+                            uid=11_209 StaticText "Add Sales"
+                              uid=11_210 InlineTextBox "Add Sales"
+                          uid=11_211 paragraph
+                            uid=11_212 StaticText "Invite team member"
+                              uid=11_213 InlineTextBox "Invite team member"
+                      uid=11_214 link "Setup WhatsApp Configure bot" url="http://localhost:8080/admin/whatsapp"
+                        uid=11_215 image
+                        uid=11_216 ignored
+                          uid=11_217 paragraph
+                            uid=11_218 StaticText "Setup WhatsApp"
+                              uid=11_219 InlineTextBox "Setup WhatsApp"
+                          uid=11_220 paragraph
+                            uid=11_221 StaticText "Configure bot"
+                              uid=11_222 InlineTextBox "Configure bot"
+      uid=11_223 generic

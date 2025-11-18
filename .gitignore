@@ -56,3 +56,5 @@ uploads/
 # WhatsApp session data
 whatsapp_sessions/
 tmp/
+static/css/input.css
+node_modules/

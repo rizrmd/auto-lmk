@@ -1,0 +1,234 @@
+uid=5_0 RootWebArea "Dashboard Admin - Admin Dashboard" url="http://localhost:8080/admin"
+  uid=5_1 ignored
+    uid=5_2 ignored
+      uid=5_3 generic
+        uid=5_4 ignored
+          uid=5_5 ignored
+            uid=5_6 heading "Auto LMK" level="1"
+              uid=5_7 StaticText "Auto LMK"
+                uid=5_8 InlineTextBox "Auto LMK"
+          uid=5_9 navigation
+            uid=5_10 link "📊 Dashboard" url="http://localhost:8080/admin"
+              uid=5_11 image
+              uid=5_12 ignored
+                uid=5_13 StaticText "📊"
+                  uid=5_14 InlineTextBox "📊"
+              uid=5_15 StaticText "Dashboard"
+                uid=5_16 InlineTextBox "Dashboard"
+            uid=5_17 link "🚗 Mobil" url="http://localhost:8080/admin/cars"
+              uid=5_18 image
+              uid=5_19 ignored
+                uid=5_20 StaticText "🚗"
+                  uid=5_21 InlineTextBox "🚗"
+              uid=5_22 StaticText "Mobil"
+                uid=5_23 InlineTextBox "Mobil"
+            uid=5_24 link "👥 Tim Sales" url="http://localhost:8080/admin/sales"
+              uid=5_25 image
+              uid=5_26 ignored
+                uid=5_27 StaticText "👥"
+                  uid=5_28 InlineTextBox "👥"
+              uid=5_29 StaticText "Tim Sales"
+                uid=5_30 InlineTextBox "Tim Sales"
+            uid=5_31 link "💬 Percakapan" url="http://localhost:8080/admin/conversations"
+              uid=5_32 image
+              uid=5_33 ignored
+                uid=5_34 StaticText "💬"
+                  uid=5_35 InlineTextBox "💬"
+              uid=5_36 StaticText "Percakapan"
+                uid=5_37 InlineTextBox "Percakapan"
+            uid=5_38 link "📊 Analitik" url="http://localhost:8080/admin/analytics"
+              uid=5_39 image
+              uid=5_40 ignored
+                uid=5_41 StaticText "📊"
+                  uid=5_42 InlineTextBox "📊"
+              uid=5_43 StaticText "Analitik"
+                uid=5_44 InlineTextBox "Analitik"
+            uid=5_45 link "📝 Blog" url="http://localhost:8080/admin/blog"
+              uid=5_46 image
+              uid=5_47 ignored
+                uid=5_48 StaticText "📝"
+                  uid=5_49 InlineTextBox "📝"
+              uid=5_50 StaticText "Blog"
+                uid=5_51 InlineTextBox "Blog"
+            uid=5_52 ignored
+              uid=5_53 link "📱 WhatsApp Bot" url="http://localhost:8080/admin/whatsapp"
+                uid=5_54 image
+                uid=5_55 ignored
+                  uid=5_56 StaticText "📱"
+                    uid=5_57 InlineTextBox "📱"
+                uid=5_58 StaticText "WhatsApp Bot"
+                  uid=5_59 InlineTextBox "WhatsApp Bot"
+              uid=5_60 link "🎨 Branding" url="http://localhost:8080/admin/branding"
+                uid=5_61 image
+                uid=5_62 ignored
+                  uid=5_63 StaticText "🎨"
+                    uid=5_64 InlineTextBox "🎨"
+                uid=5_65 StaticText "Branding"
+                  uid=5_66 InlineTextBox "Branding"
+              uid=5_67 link "📍 Showroom" url="http://localhost:8080/admin/showroom"
+                uid=5_68 image
+                uid=5_69 ignored
+                  uid=5_70 StaticText "📍"
+                    uid=5_71 InlineTextBox "📍"
+                uid=5_72 StaticText "Showroom"
+                  uid=5_73 InlineTextBox "Showroom"
+              uid=5_74 link "⚙️ Pengaturan" url="http://localhost:8080/admin/settings"
+                uid=5_75 image
+                uid=5_76 ignored
+                  uid=5_77 StaticText "⚙️"
+                    uid=5_78 InlineTextBox "⚙️"
+                uid=5_79 StaticText "Pengaturan"
+                  uid=5_80 InlineTextBox "Pengaturan"
+          uid=5_81 generic
+            uid=5_82 ignored
+              uid=5_83 ignored
+                uid=5_84 image
+              uid=5_85 ignored
+                uid=5_86 paragraph
+                  uid=5_87 StaticText "Admin"
+                    uid=5_88 InlineTextBox "Admin"
+                uid=5_89 paragraph
+                  uid=5_90 StaticText "Admin"
+                    uid=5_91 InlineTextBox "Admin"
+              uid=5_92 link url="http://localhost:8080/logout"
+                uid=5_93 image
+        uid=5_94 ignored
+          uid=5_95 banner
+            uid=5_96 ignored
+              uid=5_97 ignored
+                uid=5_98 heading "Dashboard Admin" level="2"
+                  uid=5_99 StaticText "Dashboard Admin"
+                    uid=5_100 InlineTextBox "Dashboard Admin"
+                uid=5_101 ignored
+                  uid=5_102 link url="http://localhost:8080/"
+                    uid=5_103 image
+                  uid=5_104 button
+                    uid=5_105 image
+                    uid=5_106 ignored
+          uid=5_107 main
+            uid=5_108 ignored
+              uid=5_109 ignored
+                uid=5_110 ignored
+                  uid=5_111 heading "Dashboard" level="1"
+                    uid=5_112 StaticText "Dashboard"
+                      uid=5_113 InlineTextBox "Dashboard"
+                  uid=5_114 paragraph
+                    uid=5_115 StaticText "Monitor your business performance and manage operations"
+                      uid=5_116 InlineTextBox "Monitor your business performance and manage operations"
+                uid=5_117 ignored
+                  uid=5_118 link "Add Car" url="http://localhost:8080/admin/cars/new"
+                    uid=5_119 image
+                    uid=5_120 StaticText "Add Car"
+                      uid=5_121 InlineTextBox "Add Car"
+              uid=5_122 ignored
+                uid=5_123 generic
+                  uid=5_124 ignored
+                    uid=5_125 ignored
+                      uid=5_126 ignored
+                        uid=5_127 image
+                      uid=5_128 ignored
+                        uid=5_129 paragraph
+                          uid=5_130 StaticText "WhatsApp Bot"
+                            uid=5_131 InlineTextBox "WhatsApp Bot"
+                        uid=5_132 paragraph
+                          uid=5_133 StaticText "Disconnected"
+                            uid=5_134 InlineTextBox "Disconnected"
+                        uid=5_135 paragraph
+                          uid=5_136 StaticText "Not paired"
+                            uid=5_137 InlineTextBox "Not paired"
+                    uid=5_138 image
+                uid=5_139 generic
+                  uid=5_140 ignored
+                    uid=5_141 ignored
+                      uid=5_142 ignored
+                        uid=5_143 image
+                      uid=5_144 ignored
+                        uid=5_145 paragraph
+                          uid=5_146 StaticText "Conversations"
+                            uid=5_147 InlineTextBox "Conversations"
+                        uid=5_148 paragraph
+                          uid=5_149 StaticText "0"
+                            uid=5_150 InlineTextBox "0"
+                        uid=5_151 paragraph
+                          uid=5_152 StaticText "Last 30 days"
+                            uid=5_153 InlineTextBox "Last 30 days"
+                    uid=5_154 image
+                uid=5_155 generic
+                  uid=5_156 ignored
+                    uid=5_157 ignored
+                      uid=5_158 ignored
+                        uid=5_159 image
+                      uid=5_160 ignored
+                        uid=5_161 paragraph
+                          uid=5_162 StaticText "Sales Team"
+                            uid=5_163 InlineTextBox "Sales Team"
+                        uid=5_164 paragraph
+                          uid=5_165 StaticText "0"
+                            uid=5_166 InlineTextBox "0"
+                        uid=5_167 paragraph
+                          uid=5_168 StaticText "Active members"
+                            uid=5_169 InlineTextBox "Active members"
+                    uid=5_170 image
+                uid=5_171 generic
+                  uid=5_172 ignored
+                    uid=5_173 ignored
+                      uid=5_174 ignored
+                        uid=5_175 image
+                      uid=5_176 ignored
+                        uid=5_177 paragraph
+                          uid=5_178 StaticText "Inventory"
+                            uid=5_179 InlineTextBox "Inventory"
+                        uid=5_180 ignored
+                        uid=5_181 paragraph
+                          uid=5_182 StaticText "Cars in catalog"
+                            uid=5_183 InlineTextBox "Cars in catalog"
+                    uid=5_184 image
+              uid=5_185 ignored
+                uid=5_186 ignored
+                  uid=5_187 heading "Recent Conversations" level="2"
+                    uid=5_188 StaticText "Recent Conversations"
+                      uid=5_189 InlineTextBox "Recent Conversations"
+                  uid=5_190 link "View All →" url="http://localhost:8080/admin/conversations"
+                    uid=5_191 StaticText "View All →"
+                      uid=5_192 InlineTextBox "View All →"
+                uid=5_193 ignored
+                  uid=5_194 ignored
+                    uid=5_195 image
+                    uid=5_196 paragraph
+                      uid=5_197 StaticText "No conversations yet. Conversations will appear after customers or sales send messages via WhatsApp."
+                        uid=5_198 InlineTextBox "No conversations yet. Conversations will appear after customers or sales send messages via WhatsApp."
+              uid=5_199 ignored
+                uid=5_200 ignored
+                  uid=5_201 heading "Quick Actions" level="3"
+                    uid=5_202 StaticText "Quick Actions"
+                      uid=5_203 InlineTextBox "Quick Actions"
+                uid=5_204 ignored
+                  uid=5_205 ignored
+                    uid=5_206 link "Add Car Add new vehicle to inventory" url="http://localhost:8080/admin/cars/new"
+                      uid=5_207 image
+                      uid=5_208 ignored
+                        uid=5_209 paragraph
+                          uid=5_210 StaticText "Add Car"
+                            uid=5_211 InlineTextBox "Add Car"
+                        uid=5_212 paragraph
+                          uid=5_213 StaticText "Add new vehicle to inventory"
+                            uid=5_214 InlineTextBox "Add new vehicle to inventory"
+                    uid=5_215 link "Add Sales Invite team member" url="http://localhost:8080/admin/sales/new"
+                      uid=5_216 image
+                      uid=5_217 ignored
+                        uid=5_218 paragraph
+                          uid=5_219 StaticText "Add Sales"
+                            uid=5_220 InlineTextBox "Add Sales"
+                        uid=5_221 paragraph
+                          uid=5_222 StaticText "Invite team member"
+                            uid=5_223 InlineTextBox "Invite team member"
+                    uid=5_224 link "Setup WhatsApp Configure bot" url="http://localhost:8080/admin/whatsapp"
+                      uid=5_225 image
+                      uid=5_226 ignored
+                        uid=5_227 paragraph
+                          uid=5_228 StaticText "Setup WhatsApp"
+                            uid=5_229 InlineTextBox "Setup WhatsApp"
+                        uid=5_230 paragraph
+                          uid=5_231 StaticText "Configure bot"
+                            uid=5_232 InlineTextBox "Configure bot"
+      uid=5_233 generic
