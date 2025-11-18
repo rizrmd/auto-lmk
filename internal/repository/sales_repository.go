@@ -24,17 +24,18 @@ func (r *SalesRepository) Create(ctx context.Context, req *model.CreateSalesRequ
 	}
 
 	query := `
-		INSERT INTO sales (tenant_id, phone_number, name)
-		VALUES ($1, $2, $3)
-		RETURNING id, tenant_id, phone_number, name, status, registered_at
+		INSERT INTO sales (tenant_id, phone_number, name, role)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, tenant_id, phone_number, name, role, status, registered_at
 	`
 
 	sales := &model.Sales{}
-	err = r.db.QueryRowContext(ctx, query, tenantID, req.PhoneNumber, req.Name).Scan(
+	err = r.db.QueryRowContext(ctx, query, tenantID, req.PhoneNumber, req.Name, req.Role).Scan(
 		&sales.ID,
 		&sales.TenantID,
 		&sales.PhoneNumber,
 		&sales.Name,
+		&sales.Role,
 		&sales.Status,
 		&sales.RegisteredAt,
 	)
@@ -54,7 +55,7 @@ func (r *SalesRepository) GetByPhoneNumber(ctx context.Context, phoneNumber stri
 	}
 
 	query := `
-		SELECT id, tenant_id, phone_number, name, status, registered_at
+		SELECT id, tenant_id, phone_number, name, role, status, registered_at
 		FROM sales
 		WHERE tenant_id = $1 AND phone_number = $2
 	`
@@ -65,6 +66,7 @@ func (r *SalesRepository) GetByPhoneNumber(ctx context.Context, phoneNumber stri
 		&sales.TenantID,
 		&sales.PhoneNumber,
 		&sales.Name,
+		&sales.Role,
 		&sales.Status,
 		&sales.RegisteredAt,
 	)
@@ -105,7 +107,7 @@ func (r *SalesRepository) List(ctx context.Context) ([]*model.Sales, error) {
 	}
 
 	query := `
-		SELECT id, tenant_id, phone_number, name, status, registered_at
+		SELECT id, tenant_id, phone_number, name, role, status, registered_at
 		FROM sales
 		WHERE tenant_id = $1
 		ORDER BY registered_at DESC
@@ -125,6 +127,7 @@ func (r *SalesRepository) List(ctx context.Context) ([]*model.Sales, error) {
 			&sales.TenantID,
 			&sales.PhoneNumber,
 			&sales.Name,
+			&sales.Role,
 			&sales.Status,
 			&sales.RegisteredAt,
 		)

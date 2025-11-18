@@ -1,0 +1,214 @@
+{{define "pagination"}}
+{{/*
+  Pagination Component
+  Usage: {{template "pagination" (dict "currentPage" 2 "totalPages" 10 "baseURL" "/mobil")}}
+  Parameters:
+    - currentPage: Current page number (required)
+    - totalPages: Total number of pages (required)
+    - baseURL: Base URL for page links (required)
+    - showPrevNext: Show previous/next buttons (default: true)
+    - showFirstLast: Show first/last buttons (default: true)
+    - maxVisible: Max page numbers to show (default: 5)
+*/}}
+{{$current := .currentPage}}
+{{$total := .totalPages}}
+{{$baseURL := .baseURL}}
+{{$maxVisible := .maxVisible | default 5}}
+{{$showPrevNext := .showPrevNext | default true}}
+{{$showFirstLast := .showFirstLast | default true}}
+
+{{if gt $total 1}}
+<nav class="flex items-center justify-center space-x-2" aria-label="Pagination">
+  <!-- First Page Button -->
+  {{if and $showFirstLast (gt $current 1)}}
+  <a
+    href="{{$baseURL}}?page=1"
+    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    aria-label="First page"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+    </svg>
+  </a>
+  {{end}}
+
+  <!-- Previous Button -->
+  {{if $showPrevNext}}
+  {{if gt $current 1}}
+  <a
+    href="{{$baseURL}}?page={{sub $current 1}}"
+    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    aria-label="Previous page"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+    </svg>
+  </a>
+  {{else}}
+  <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+    </svg>
+  </span>
+  {{end}}
+  {{end}}
+
+  <!-- Page Numbers -->
+  {{$startPage := sub $current 2}}
+  {{if lt $startPage 1}}{{$startPage = 1}}{{end}}
+
+  {{$endPage := add $current 2}}
+  {{if gt $endPage $total}}{{$endPage = $total}}{{end}}
+
+  <!-- Show ellipsis if start is not 1 -->
+  {{if gt $startPage 1}}
+  <a
+    href="{{$baseURL}}?page=1"
+    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+  >
+    1
+  </a>
+  {{if gt $startPage 2}}
+  <span class="px-2 text-gray-500">...</span>
+  {{end}}
+  {{end}}
+
+  <!-- Page Number Loop -->
+  {{range $page := seq $startPage $endPage}}
+  {{if eq $page $current}}
+  <span class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg">
+    {{$page}}
+  </span>
+  {{else}}
+  <a
+    href="{{$baseURL}}?page={{$page}}"
+    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+  >
+    {{$page}}
+  </a>
+  {{end}}
+  {{end}}
+
+  <!-- Show ellipsis if end is not total -->
+  {{if lt $endPage $total}}
+  {{if lt $endPage (sub $total 1)}}
+  <span class="px-2 text-gray-500">...</span>
+  {{end}}
+  <a
+    href="{{$baseURL}}?page={{$total}}"
+    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+  >
+    {{$total}}
+  </a>
+  {{end}}
+
+  <!-- Next Button -->
+  {{if $showPrevNext}}
+  {{if lt $current $total}}
+  <a
+    href="{{$baseURL}}?page={{add $current 1}}"
+    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    aria-label="Next page"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </a>
+  {{else}}
+  <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </span>
+  {{end}}
+  {{end}}
+
+  <!-- Last Page Button -->
+  {{if and $showFirstLast (lt $current $total)}}
+  <a
+    href="{{$baseURL}}?page={{$total}}"
+    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    aria-label="Last page"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+    </svg>
+  </a>
+  {{end}}
+</nav>
+
+<!-- Mobile-friendly version (Compact) -->
+<div class="lg:hidden flex items-center justify-between mt-4">
+  <div class="text-sm text-gray-700">
+    Page <span class="font-medium">{{$current}}</span> of <span class="font-medium">{{$total}}</span>
+  </div>
+  <div class="flex space-x-2">
+    {{if gt $current 1}}
+    <a
+      href="{{$baseURL}}?page={{sub $current 1}}"
+      class="btn-secondary"
+    >
+      Previous
+    </a>
+    {{end}}
+    {{if lt $current $total}}
+    <a
+      href="{{$baseURL}}?page={{add $current 1}}"
+      class="btn-primary"
+    >
+      Next
+    </a>
+    {{end}}
+  </div>
+</div>
+{{end}}
+{{end}}
+
+{{define "simple-pagination"}}
+{{/*
+  Simple Pagination Component (Previous/Next only)
+  Usage: {{template "simple-pagination" (dict "currentPage" 2 "totalPages" 10 "baseURL" "/mobil")}}
+*/}}
+{{$current := .currentPage}}
+{{$total := .totalPages}}
+{{$baseURL := .baseURL}}
+
+{{if gt $total 1}}
+<div class="flex items-center justify-between">
+  <!-- Previous -->
+  {{if gt $current 1}}
+  <a
+    href="{{$baseURL}}?page={{sub $current 1}}"
+    class="btn-secondary inline-flex items-center space-x-2"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+    </svg>
+    <span>Previous</span>
+  </a>
+  {{else}}
+  <div></div>
+  {{end}}
+
+  <!-- Page Info -->
+  <span class="text-sm text-gray-700">
+    Page <span class="font-medium">{{$current}}</span> of <span class="font-medium">{{$total}}</span>
+  </span>
+
+  <!-- Next -->
+  {{if lt $current $total}}
+  <a
+    href="{{$baseURL}}?page={{add $current 1}}"
+    class="btn-primary inline-flex items-center space-x-2"
+  >
+    <span>Next</span>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </a>
+  {{else}}
+  <div></div>
+  {{end}}
+</div>
+{{end}}
+{{end}}

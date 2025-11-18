@@ -1,0 +1,1145 @@
+{{define "content"}}
+<div class="mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Edit Mobil</h1>
+            <p class="text-gray-600 mt-1">Edit informasi mobil {{.Car.Brand}} {{.Car.Model}}</p>
+        </div>
+        <a href="/admin/cars" class="text-gray-600 hover:text-gray-900">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+
+<!-- Car Form -->
+<div class="bg-white rounded-lg shadow p-6" x-data="carEditFormValidation()">
+    <div id="form-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
+    <div id="form-success" class="hidden mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded"></div>
+
+    <!-- Existing Photos Section -->
+    <div class="mb-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <span class="text-2xl mr-2">📷</span>
+            Foto Mobil Saat Ini
+        </h2>
+        <p class="text-sm text-gray-700 mb-4 font-medium">Foto yang sudah diupload (klik tombol hapus untuk menghapus)</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {{range .Photos}}
+            <div class="relative group">
+                <img src="/uploads/{{.FilePath}}" alt="Car photo" class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
+                <button type="button"
+                        onclick="deletePhoto({{.ID}})"
+                        class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div class="absolute bottom-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                    #{{.DisplayOrder}}
+                </div>
+            </div>
+            {{else}}
+            <div class="col-span-full text-center text-gray-500 py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                </svg>
+                <p class="mt-2">Belum ada foto</p>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <!-- Add New Photos Section -->
+    <div class="mb-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <span class="text-2xl mr-2">📸</span>
+            Tambah Foto Baru
+        </h2>
+        <p class="text-sm text-gray-700 mb-4 font-medium">Upload foto-foto tambahan (maksimal 20 foto total)</p>
+
+        <div class="space-y-4">
+            <!-- File Input with Clear Button -->
+            <div class="relative">
+                <label for="car-photos" class="cursor-pointer">
+                    <div class="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-blue-300 border-dashed rounded-lg hover:border-blue-400 hover:bg-blue-50">
+                        <div class="text-center">
+                            <svg class="mx-auto h-12 w-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-700">
+                                <span class="font-semibold text-blue-600">Klik di sini untuk upload foto</span>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">atau drag & drop file foto</p>
+                            <p class="text-xs text-gray-500 mt-1">JPG, PNG, WebP (Max 5MB per foto)</p>
+                        </div>
+                    </div>
+                </label>
+                <input type="file"
+                       id="car-photos"
+                       @change="handlePhotoSelect"
+                       multiple
+                       accept="image/*"
+                       class="hidden">
+            </div>
+
+            <!-- Photo Counter -->
+            <div x-show="selectedPhotos.length > 0" class="text-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-600 text-white">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                    </svg>
+                    <span x-text="selectedPhotos.length"></span> foto baru dipilih
+                </span>
+            </div>
+
+            <!-- Photo Preview -->
+            <div x-show="selectedPhotos.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <template x-for="(photo, index) in selectedPhotos" :key="index">
+                    <div class="relative group">
+                        <img :src="photo.preview" :alt="`Preview ${index + 1}`" class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
+                        <button type="button"
+                                @click="removePhoto(index)"
+                                class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                            Baru #<span x-text="index + 1"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <form @submit.prevent="validateAndSubmit"
+          class="space-y-6">
+
+        <!-- Required Information Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Wajib</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Brand -->
+                <div>
+                    <label for="brand" class="block text-sm font-medium text-gray-700">
+                        Merek <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text"
+                           id="brand"
+                           name="brand"
+                           x-model="form.brand"
+                           @blur="validateBrand"
+                           required
+                           minlength="2"
+                           maxlength="50"
+                           placeholder="Toyota, Honda, dll"
+                           :class="{'border-red-500': errors.brand, 'border-gray-300': !errors.brand}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.brand" x-text="errors.brand" class="text-red-600 text-sm mt-1"></p>
+                </div>
+
+                <!-- Model -->
+                <div>
+                    <label for="model" class="block text-sm font-medium text-gray-700">
+                        Model <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text"
+                           id="model"
+                           name="model"
+                           x-model="form.model"
+                           @blur="validateModel"
+                           required
+                           minlength="2"
+                           maxlength="100"
+                           placeholder="Avanza, Civic, dll"
+                           :class="{'border-red-500': errors.model, 'border-gray-300': !errors.model}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.model" x-text="errors.model" class="text-red-600 text-sm mt-1"></p>
+                </div>
+
+                <!-- Year -->
+                <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700">
+                        Tahun <span class="text-red-600">*</span>
+                    </label>
+                    <input type="number"
+                           id="year"
+                           name="year"
+                           x-model.number="form.year"
+                           @blur="validateYear"
+                           required
+                           min="1990"
+                           :max="currentYear + 1"
+                           placeholder="2020"
+                           :class="{'border-red-500': errors.year, 'border-gray-300': !errors.year}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.year" x-text="errors.year" class="text-red-600 text-sm mt-1"></p>
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <label for="price" class="block text-sm font-medium text-gray-700">
+                        Harga (Rp) <span class="text-red-600">*</span>
+                    </label>
+                    <input type="number"
+                           id="price"
+                           name="price"
+                           x-model.number="form.price"
+                           @blur="validatePrice"
+                           required
+                           min="1000000"
+                           placeholder="150000000"
+                           :class="{'border-red-500': errors.price, 'border-gray-300': !errors.price}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.price" x-text="errors.price" class="text-red-600 text-sm mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optional Specifications Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Spesifikasi Tambahan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Mileage -->
+                <div>
+                    <label for="mileage" class="block text-sm font-medium text-gray-700">
+                        Kilometer
+                    </label>
+                    <input type="number"
+                           id="mileage"
+                           name="mileage"
+                           x-model.number="form.mileage"
+                           min="0"
+                           placeholder="50000"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Transmission -->
+                <div>
+                    <label for="transmission" class="block text-sm font-medium text-gray-700">
+                        Transmisi
+                    </label>
+                    <select id="transmission"
+                            name="transmission"
+                            x-model="form.transmission"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Pilih Transmisi</option>
+                        <option value="manual">Manual</option>
+                        <option value="automatic">Automatic</option>
+                        <option value="cvt">CVT</option>
+                    </select>
+                </div>
+
+                <!-- Fuel Type -->
+                <div>
+                    <label for="fuel_type" class="block text-sm font-medium text-gray-700">
+                        Jenis Bahan Bakar
+                    </label>
+                    <select id="fuel_type"
+                            name="fuel_type"
+                            x-model="form.fuel_type"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Pilih Bahan Bakar</option>
+                        <option value="gasoline">Bensin</option>
+                        <option value="diesel">Diesel</option>
+                        <option value="electric">Listrik</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+
+                <!-- Engine CC -->
+                <div>
+                    <label for="engine_cc" class="block text-sm font-medium text-gray-700">
+                        Kapasitas Mesin (CC)
+                    </label>
+                    <input type="number"
+                           id="engine_cc"
+                           name="engine_cc"
+                           x-model.number="form.engine_cc"
+                           min="500"
+                           max="10000"
+                           placeholder="1500"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Seats -->
+                <div>
+                    <label for="seats" class="block text-sm font-medium text-gray-700">
+                        Jumlah Kursi
+                    </label>
+                    <input type="number"
+                           id="seats"
+                           name="seats"
+                           x-model.number="form.seats"
+                           min="2"
+                           max="20"
+                           placeholder="5"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Color -->
+                <div>
+                    <label for="color" class="block text-sm font-medium text-gray-700">
+                        Warna
+                    </label>
+                    <input type="text"
+                           id="color"
+                           name="color"
+                           x-model="form.color"
+                           maxlength="50"
+                           placeholder="Hitam Metalik"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Description Section with SEO Tools -->
+        <div x-data="seoDescriptionField" class="space-y-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Deskripsi & SEO Optimization</h2>
+
+            <!-- SEO Writing Guide -->
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <span class="text-2xl mr-3">📝</span>
+                    <div class="flex-1">
+                        <h3 class="text-md font-semibold text-gray-900 mb-2">SEO Writing Guide</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <h4 class="font-semibold text-purple-700 mb-1">📏 Length Guidelines:</h4>
+                                <ul class="text-gray-700 space-y-1">
+                                    <li>• <span class="text-red-600">Min 300 karakter</span> (kurang optimal)</li>
+                                    <li>• <span class="text-yellow-600">300-800 karakter</span> (cukup)</li>
+                                    <li>• <span class="text-green-600">800-1500 karakter</span> (optimal)</li>
+                                    <li>• <span class="text-blue-600">>1500 karakter</span> (excellent)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-purple-700 mb-1">🎯 Keyword Tips:</h4>
+                                <ul class="text-gray-700 space-y-1">
+                                    <li>• Mention brand, model, year</li>
+                                    <li>• Include key features</li>
+                                    <li>• Add condition details</li>
+                                    <li>• Use location keywords</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <h4 class="font-semibold text-purple-700 mb-1">✨ AIDA Framework:</h4>
+                            <div class="text-gray-700 text-xs grid grid-cols-1 md:grid-cols-4 gap-2">
+                                <div><strong>A</strong>ttention - Hook pembeli</div>
+                                <div><strong>I</strong>nterest - Fitur menarik</div>
+                                <div><strong>D</strong>esire - Manfaat & keunggulan</div>
+                                <div><strong>A</strong>ction - Call-to-action</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Tools Panel -->
+            <div class="bg-white border-2 border-gray-200 rounded-lg p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Character Counter -->
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold" :class="characterCountClass">
+                            <span x-text="characterCount"></span>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-1">Karakter</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="h-2 rounded-full transition-all duration-300"
+                                 :class="characterCountBarClass"
+                                 :style="`width: ${Math.min((characterCount / 1500) * 100, 100)}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Score -->
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold" :class="seoScoreClass">
+                            <span x-text="seoScore"></span>%
+                        </div>
+                        <div class="text-xs text-gray-600 mt-1">SEO Score</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="h-2 rounded-full transition-all duration-300"
+                                 :class="seoScoreBarClass"
+                                 :style="`width: ${seoScore}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Keyword Density -->
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">
+                            <span x-text="keywordDensity"></span>%
+                        </div>
+                        <div class="text-xs text-gray-600 mt-1">Keyword Density</div>
+                        <div class="text-xs text-green-600 mt-1" x-show="keywordDensity >= 1 && keywordDensity <= 3">✓ Optimal</div>
+                        <div class="text-xs text-yellow-600 mt-1" x-show="keywordDensity < 1">Low density</div>
+                        <div class="text-xs text-red-600 mt-1" x-show="keywordDensity > 3">Too high</div>
+                    </div>
+                </div>
+
+                <!-- Meta Preview -->
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">🔍 Meta Description Preview:</h4>
+                    <div class="bg-gray-50 p-3 rounded border text-sm">
+                        <div class="text-blue-600 font-medium mb-1" x-text="form.brand + ' ' + form.model + ' ' + (form.year || '')"></div>
+                        <div class="text-gray-600" x-text="metaDescription"></div>
+                        <div class="text-green-600 text-xs mt-1" x-show="metaDescription.length <= 160">
+                            ✓ Optimal length (<span x-text="metaDescription.length"></span>/160)
+                        </div>
+                        <div class="text-yellow-600 text-xs mt-1" x-show="metaDescription.length > 160">
+                            ⚠ Too long (<span x-text="metaDescription.length"></span>/160)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Description Field with Rich Text Toolbar -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">
+                    Deskripsi Mobil <span class="text-red-600">*</span>
+                </label>
+
+                <!-- Rich Text Toolbar -->
+                <div class="border border-gray-300 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-2">
+                    <button type="button" @click="formatText('bold')"
+                            class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
+                    <button type="button" @click="formatText('italic')"
+                            class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
+                    <button type="button" @click="insertList('bullet')"
+                            class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-100">• Bullet</button>
+                    <button type="button" @click="insertList('numbered')"
+                            class="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-100">1. List</button>
+
+                    <div class="border-l border-gray-300 mx-2"></div>
+
+                    <button type="button" @click="optimizeForSEO()"
+                            :disabled="isOptimizing"
+                            class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50">
+                        <span x-show="!isOptimizing">🚀 Optimize for SEO</span>
+                        <span x-show="isOptimizing">⏳ Optimizing...</span>
+                    </button>
+                    <button type="button" @click="generatePersuasive()"
+                            :disabled="isGenerating"
+                            class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                        <span x-show="!isGenerating">✨ AI Persuasive</span>
+                        <span x-show="isGenerating">⏳ Generating...</span>
+                    </button>
+                    <button type="button" @click="clearDescription()"
+                            class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700">Clear</button>
+                </div>
+
+                <!-- Enhanced Textarea -->
+                <div class="relative">
+                    <textarea id="description"
+                              name="description"
+                              x-model="form.description"
+                              @input="updateSEOTools"
+                              rows="8"
+                              minlength="300"
+                              maxlength="3000"
+                              placeholder="🚀 Tulis deskripsi SEO-friendly yang menarik pembeli&#10;&#10;Contoh struktur AIDA:&#10;• Attention: Honda Jazz RS 2019 Automatic - Mewah & Irit!&#10;• Interest: Interior premium, sensor parking, keyless entry&#10;• Desire: KM rendah 23rb, service record lengkap, siap pakai&#10;• Action: Hubungi sekarang untuk test drive & penawaran terbaik!&#10;&#10;💡 Tips: Sebutkan brand, model, tahun, fitur unggulan, kondisi, dan kontak"
+                              class="mt-0 block w-full px-3 py-2 border border-gray-300 border-t-0 rounded-b-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+
+                    <!-- Auto-save indicator -->
+                    <div class="absolute bottom-2 right-2 text-xs text-gray-500"
+                         x-show="autoSaveStatus"
+                         x-text="autoSaveStatus"></div>
+                </div>
+
+                <!-- Character counter with visual feedback -->
+                <div class="mt-2 flex justify-between items-center">
+                    <div class="text-sm" :class="characterCountClass">
+                        <span x-text="characterCount"></span> / 3000 karakter
+                        <span x-text="characterCountMessage" class="ml-2"></span>
+                    </div>
+                    <div class="text-xs text-gray-500" x-show="lastSaved">
+                        Last saved: <span x-text="lastSaved"></span>
+                    </div>
+                </div>
+
+                <!-- Validation message -->
+                <p x-show="errors.description" x-text="errors.description" class="text-red-600 text-sm mt-1"></p>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Status & Tampilan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Status -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700">
+                        Status
+                    </label>
+                    <select id="status"
+                            name="status"
+                            x-model="form.status"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="available">Tersedia</option>
+                        <option value="sold">Terjual</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <!-- Featured -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Tampilkan di Beranda
+                    </label>
+                    <div class="mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox"
+                                   id="is_featured"
+                                   name="is_featured"
+                                   x-model="form.is_featured"
+                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Jadikan mobil unggulan</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex justify-end space-x-3 pt-6 border-t">
+            <a href="/admin/cars"
+               :class="{'pointer-events-none opacity-50': isSubmitting}"
+               class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                Batal
+            </a>
+            <button type="submit"
+                    :disabled="isSubmitting || !isFormValid()"
+                    class="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                <span x-show="!isSubmitting">Update Mobil</span>
+                <span x-show="isSubmitting" class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menyimpan...
+                </span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Alpine.js Form Validation Component for Edit
+function carEditFormValidation() {
+    return {
+        currentYear: new Date().getFullYear(),
+        carId: {{.Car.ID}},
+        existingPhotoCount: {{len .Photos}},
+        form: {
+            brand: {{.Car.Brand | js}},
+            model: {{.Car.Model | js}},
+            year: {{.Car.Year}},
+            price: {{.Car.Price}},
+            mileage: {{if .Car.Mileage}}{{.Car.Mileage}}{{else}}null{{end}},
+            transmission: {{if .Car.Transmission}}{{.Car.Transmission | js}}{{else}}''{{end}},
+            fuel_type: {{if .Car.FuelType}}{{.Car.FuelType | js}}{{else}}''{{end}},
+            engine_cc: {{if .Car.EngineCC}}{{.Car.EngineCC}}{{else}}null{{end}},
+            seats: {{if .Car.Seats}}{{.Car.Seats}}{{else}}null{{end}},
+            color: {{if .Car.Color}}{{.Car.Color | js}}{{else}}''{{end}},
+            description: {{if .Car.Description}}{{.Car.Description | js}}{{else}}''{{end}},
+            status: {{.Car.Status | js}},
+            is_featured: {{.Car.IsFeatured}}
+        },
+        errors: {},
+        isSubmitting: false,
+        selectedPhotos: [],
+
+        handlePhotoSelect(event) {
+            const files = Array.from(event.target.files);
+            const errorDiv = document.getElementById('form-error');
+            errorDiv.classList.add('hidden');
+
+            // Validate total photo count
+            if (this.existingPhotoCount + this.selectedPhotos.length + files.length > 20) {
+                errorDiv.textContent = 'Maksimal 20 foto total. Saat ini ada ' + this.existingPhotoCount + ' foto dan Anda memilih ' + (this.selectedPhotos.length + files.length) + ' foto baru.';
+                errorDiv.classList.remove('hidden');
+                event.target.value = ''; // Reset file input
+                return;
+            }
+
+            // Process each file
+            files.forEach(file => {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    errorDiv.textContent = 'File ' + file.name + ' bukan gambar. Hanya file gambar yang diperbolehkan.';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    errorDiv.textContent = 'File ' + file.name + ' terlalu besar. Maksimal 5MB per foto.';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.selectedPhotos.push({
+                        file: file,
+                        preview: e.target.result,
+                        name: file.name
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Reset file input to allow selecting the same files again
+            event.target.value = '';
+        },
+
+        removePhoto(index) {
+            this.selectedPhotos.splice(index, 1);
+        },
+
+        validateBrand() {
+            const trimmed = this.form.brand.trim();
+            if (!trimmed) {
+                this.errors.brand = 'Merek wajib diisi';
+                return false;
+            }
+            if (trimmed.length < 2) {
+                this.errors.brand = 'Merek minimal 2 karakter';
+                return false;
+            }
+            delete this.errors.brand;
+            return true;
+        },
+
+        validateModel() {
+            const trimmed = this.form.model.trim();
+            if (!trimmed) {
+                this.errors.model = 'Model wajib diisi';
+                return false;
+            }
+            if (trimmed.length < 2) {
+                this.errors.model = 'Model minimal 2 karakter';
+                return false;
+            }
+            delete this.errors.model;
+            return true;
+        },
+
+        validateYear() {
+            if (!this.form.year) {
+                this.errors.year = 'Tahun wajib diisi';
+                return false;
+            }
+            if (this.form.year < 1990 || this.form.year > this.currentYear + 1) {
+                this.errors.year = `Tahun harus antara 1990 dan ${this.currentYear + 1}`;
+                return false;
+            }
+            delete this.errors.year;
+            return true;
+        },
+
+        validatePrice() {
+            if (!this.form.price) {
+                this.errors.price = 'Harga wajib diisi';
+                return false;
+            }
+            if (this.form.price < 1000000) {
+                this.errors.price = 'Harga minimal Rp 1.000.000';
+                return false;
+            }
+            delete this.errors.price;
+            return true;
+        },
+
+        validateDescription() {
+            const trimmed = this.form.description.trim();
+            if (!trimmed) {
+                this.errors.description = 'Deskripsi wajib diisi';
+                return false;
+            }
+            if (trimmed.length < 300) {
+                this.errors.description = 'Deskripsi minimal 300 karakter untuk SEO optimal';
+                return false;
+            }
+            delete this.errors.description;
+            return true;
+        },
+
+        isFormValid() {
+            return this.form.brand.trim() !== '' &&
+                   this.form.model.trim() !== '' &&
+                   this.form.year !== null &&
+                   this.form.price !== null &&
+                   this.form.description.trim().length >= 300 &&
+                   Object.keys(this.errors).length === 0;
+        },
+
+        async validateAndSubmit(event) {
+            const brandValid = this.validateBrand();
+            const modelValid = this.validateModel();
+            const yearValid = this.validateYear();
+            const priceValid = this.validatePrice();
+            const descriptionValid = this.validateDescription();
+
+            if (!brandValid || !modelValid || !yearValid || !priceValid || !descriptionValid) {
+                return false;
+            }
+
+            this.isSubmitting = true;
+            const errorDiv = document.getElementById('form-error');
+            const successDiv = document.getElementById('form-success');
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            try {
+                // Get tenant ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const tenantId = urlParams.get('tenant_id') || '1';
+
+                // Create request payload with correct data types
+                const payload = {
+                    brand: this.form.brand.trim(),
+                    model: this.form.model.trim(),
+                    year: parseInt(this.form.year),
+                    price: parseInt(this.form.price),
+                    mileage: this.form.mileage ? parseInt(this.form.mileage) : null,
+                    transmission: this.form.transmission || null,
+                    fuel_type: this.form.fuel_type || null,
+                    engine_cc: this.form.engine_cc ? parseInt(this.form.engine_cc) : null,
+                    seats: this.form.seats ? parseInt(this.form.seats) : null,
+                    color: this.form.color || null,
+                    description: this.form.description || null,
+                    status: this.form.status,
+                    is_featured: this.form.is_featured
+                };
+
+                const response = await fetch(`/api/cars/${this.carId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Tenant-ID': tenantId
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    // Check if there are new photos to upload
+                    if (this.selectedPhotos.length > 0) {
+                        successDiv.textContent = `Mobil berhasil diupdate! Mengupload ${this.selectedPhotos.length} foto baru...`;
+                        successDiv.classList.remove('hidden');
+
+                        try {
+                            await uploadCarPhotos(this.carId, this.selectedPhotos, tenantId);
+                            successDiv.textContent = 'Mobil dan foto berhasil diupdate! Mengarahkan ke halaman daftar mobil...';
+                        } catch (error) {
+                            successDiv.textContent = 'Mobil berhasil diupdate, tetapi gagal mengupload foto: ' + error.message;
+                        }
+                    } else {
+                        successDiv.textContent = 'Mobil berhasil diupdate! Mengarahkan ke halaman daftar mobil...';
+                        successDiv.classList.remove('hidden');
+                    }
+
+                    // Redirect after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.href = `/admin/cars?tenant_id=${tenantId}`;
+                    }, 1500);
+                } else {
+                    const errorText = await response.text();
+                    errorDiv.textContent = errorText || 'Gagal mengupdate mobil';
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    this.isSubmitting = false;
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                errorDiv.classList.remove('hidden');
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                this.isSubmitting = false;
+            }
+        }
+    };
+}
+
+// SEO Description Field Component
+function seoDescriptionField() {
+    return {
+        // SEO metrics
+        characterCount: 0,
+        seoScore: 0,
+        keywordDensity: 0,
+        metaDescription: '',
+        autoSaveStatus: '',
+        lastSaved: '',
+        autoSaveTimer: null,
+        isOptimizing: false,
+        isGenerating: false,
+
+        // Character count styling
+        get characterCountClass() {
+            if (this.characterCount < 300) return 'text-red-600';
+            if (this.characterCount < 800) return 'text-yellow-600';
+            if (this.characterCount < 1500) return 'text-green-600';
+            return 'text-blue-600';
+        },
+
+        get characterCountBarClass() {
+            if (this.characterCount < 300) return 'bg-red-500';
+            if (this.characterCount < 800) return 'bg-yellow-500';
+            if (this.characterCount < 1500) return 'bg-green-500';
+            return 'bg-blue-500';
+        },
+
+        get characterCountMessage() {
+            if (this.characterCount < 300) return '(Tambah minimal ' + (300 - this.characterCount) + ' karakter)';
+            if (this.characterCount < 800) return '(Cukup, bisa ditambah lagi)';
+            if (this.characterCount < 1500) return '(Optimal untuk SEO)';
+            return '(Excellent untuk SEO)';
+        },
+
+        // SEO Score styling
+        get seoScoreClass() {
+            if (this.seoScore < 40) return 'text-red-600';
+            if (this.seoScore < 70) return 'text-yellow-600';
+            if (this.seoScore < 90) return 'text-green-600';
+            return 'text-blue-600';
+        },
+
+        get seoScoreBarClass() {
+            if (this.seoScore < 40) return 'bg-red-500';
+            if (this.seoScore < 70) return 'bg-yellow-500';
+            if (this.seoScore < 90) return 'bg-green-500';
+            return 'bg-blue-500';
+        },
+
+        init() {
+            // Initialize with parent form data
+            const parentForm = this.$parent.form;
+            if (parentForm) {
+                this.form = parentForm;
+            }
+
+            // Load auto-saved content if exists
+            this.loadFromLocalStorage();
+
+            // Initial SEO analysis
+            this.$nextTick(() => {
+                this.updateSEOTools();
+            });
+        },
+
+        updateSEOTools() {
+            const description = this.form.description || '';
+            this.characterCount = description.length;
+
+            // Calculate SEO score
+            this.seoScore = this.calculateSEOScore(description);
+
+            // Calculate keyword density
+            this.keywordDensity = this.calculateKeywordDensity(description);
+
+            // Generate meta description
+            this.metaDescription = description.substring(0, 155);
+
+            // Auto-save functionality
+            this.autoSave();
+        },
+
+        calculateSEOScore(description) {
+            let score = 0;
+            const text = description.toLowerCase();
+
+            // Length scoring (30 points)
+            if (this.characterCount >= 300) score += 10;
+            if (this.characterCount >= 800) score += 10;
+            if (this.characterCount >= 1500) score += 10;
+
+            // Brand presence (10 points)
+            if (this.form.brand && text.includes(this.form.brand.toLowerCase())) score += 10;
+
+            // Model presence (10 points)
+            if (this.form.model && text.includes(this.form.model.toLowerCase())) score += 10;
+
+            // Year presence (10 points)
+            if (this.form.year && text.includes(this.form.year.toString())) score += 10;
+
+            // Feature keywords (20 points)
+            const features = ['ac', 'airbag', 'abs', 'sensor', 'parking', 'camera', 'bluetooth', 'usb', 'automatic', 'manual'];
+            const featureCount = features.filter(feature => text.includes(feature)).length;
+            score += Math.min(featureCount * 2, 20);
+
+            // Condition keywords (10 points)
+            const conditions = ['bagus', 'mulus', 'terawat', 'service', 'record', 'manual', 'book', 'stnk', 'bpkb'];
+            const conditionCount = conditions.filter(condition => text.includes(condition)).length;
+            score += Math.min(conditionCount * 2, 10);
+
+            // Contact/CTA (10 points)
+            const ctas = ['hubungi', 'call', 'wa', 'whatsapp', 'telpon', 'sms', 'test drive'];
+            const ctaCount = ctas.filter(cta => text.includes(cta)).length;
+            score += Math.min(ctaCount * 3, 10);
+
+            return Math.min(score, 100);
+        },
+
+        calculateKeywordDensity(description) {
+            if (!this.form.brand || !this.form.model) return 0;
+
+            const text = description.toLowerCase();
+            const words = text.split(/\s+/).length;
+            const keywords = [this.form.brand.toLowerCase(), this.form.model.toLowerCase()];
+
+            let keywordCount = 0;
+            keywords.forEach(keyword => {
+                const regex = new RegExp(keyword, 'gi');
+                const matches = text.match(regex);
+                keywordCount += matches ? matches.length : 0;
+            });
+
+            return words > 0 ? Math.round((keywordCount / words) * 100) : 0;
+        },
+
+        autoSave() {
+            // Clear existing timer
+            if (this.autoSaveTimer) {
+                clearTimeout(this.autoSaveTimer);
+            }
+
+            // Set new timer
+            this.autoSaveTimer = setTimeout(() => {
+                this.saveToLocalStorage();
+            }, 2000); // Auto-save after 2 seconds of inactivity
+        },
+
+        saveToLocalStorage() {
+            const data = {
+                description: this.form.description,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('car_description_autosave', JSON.stringify(data));
+            this.lastSaved = new Date().toLocaleTimeString('id-ID');
+            this.autoSaveStatus = 'Auto-saved';
+            setTimeout(() => {
+                this.autoSaveStatus = '';
+            }, 3000);
+        },
+
+        loadFromLocalStorage() {
+            const saved = localStorage.getItem('car_description_autosave');
+            if (saved) {
+                const data = JSON.parse(saved);
+                // Only load if current description is empty
+                if (!this.form.description) {
+                    this.form.description = data.description;
+                    this.lastSaved = new Date(data.timestamp).toLocaleTimeString('id-ID');
+                    this.updateSEOTools();
+                }
+            }
+        },
+
+        async formatText(format) {
+            const textarea = document.getElementById('description');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = this.form.description.substring(start, end);
+            let formattedText = '';
+
+            switch(format) {
+                case 'bold':
+                    formattedText = `**${selectedText}**`;
+                    break;
+                case 'italic':
+                    formattedText = `*${selectedText}*`;
+                    break;
+            }
+
+            if (formattedText) {
+                this.form.description = this.form.description.substring(0, start) + formattedText + this.form.description.substring(end);
+                this.$nextTick(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+                });
+            }
+            this.updateSEOTools();
+        },
+
+        insertList(type) {
+            const textarea = document.getElementById('description');
+            const start = textarea.selectionStart;
+
+            let listText = '';
+            if (type === 'bullet') {
+                listText = '\n• Point 1\n• Point 2\n• Point 3\n';
+            } else {
+                listText = '\n1. Point 1\n2. Point 2\n3. Point 3\n';
+            }
+
+            this.form.description = this.form.description.substring(0, start) + listText + this.form.description.substring(start);
+            this.$nextTick(() => {
+                textarea.focus();
+                textarea.setSelectionRange(start + listText.length, start + listText.length);
+            });
+            this.updateSEOTools();
+        },
+
+        async optimizeForSEO() {
+            if (!this.form.description.trim()) {
+                alert('Mohon tulis deskripsi terlebih dahulu sebelum optimize untuk SEO');
+                return;
+            }
+
+            this.isOptimizing = true;
+            const errorDiv = document.getElementById('form-error');
+
+            try {
+                const response = await fetch('/api/cars/seo-optimize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        description: this.form.description,
+                        brand: this.form.brand,
+                        model: this.form.model,
+                        year: this.form.year
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('SEO optimization failed');
+                }
+
+                const data = await response.json();
+                this.form.description = data.optimized_description;
+                this.updateSEOTools();
+
+                errorDiv.textContent = '✅ Deskripsi berhasil dioptimalkan untuk SEO!';
+                errorDiv.classList.remove('hidden');
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 3000);
+
+            } catch (error) {
+                errorDiv.textContent = 'Gagal mengoptimalkan SEO: ' + error.message;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                this.isOptimizing = false;
+            }
+        },
+
+        async generatePersuasive() {
+            if (!this.form.brand || !this.form.model) {
+                alert('Mohon isi merek dan model terlebih dahulu');
+                return;
+            }
+
+            this.isGenerating = true;
+            const errorDiv = document.getElementById('form-error');
+
+            try {
+                const response = await fetch('/api/cars/persuasive-description', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        brand: this.form.brand,
+                        model: this.form.model,
+                        year: this.form.year,
+                        price: this.form.price,
+                        transmission: this.form.transmission,
+                        fuel_type: this.form.fuel_type,
+                        color: this.form.color
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate persuasive description');
+                }
+
+                const data = await response.json();
+                this.form.description = data.description;
+                this.updateSEOTools();
+
+                errorDiv.textContent = '✅ Deskripsi persuasif berhasil dibuat!';
+                errorDiv.classList.remove('hidden');
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 3000);
+
+            } catch (error) {
+                errorDiv.textContent = 'Gagal membuat deskripsi persuasif: ' + error.message;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                this.isGenerating = false;
+            }
+        },
+
+        clearDescription() {
+            if (confirm('Apakah Anda yakin ingin menghapus seluruh deskripsi?')) {
+                this.form.description = '';
+                this.updateSEOTools();
+                localStorage.removeItem('car_description_autosave');
+            }
+        }
+    };
+}
+
+// Delete photo function
+async function deletePhoto(photoId) {
+    if (!confirm('Apakah Anda yakin ingin menghapus foto ini?')) {
+        return;
+    }
+
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tenantId = urlParams.get('tenant_id') || '1';
+
+        const response = await fetch(`/api/cars/photos/${photoId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-Tenant-ID': tenantId
+            }
+        });
+
+        if (response.ok) {
+            // Reload the page to show updated photos
+            window.location.reload();
+        } else {
+            const errorText = await response.text();
+            alert('Gagal menghapus foto: ' + errorText);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function uploadCarPhotos(carId, photos, tenantId) {
+    const formData = new FormData();
+
+    photos.forEach((photo, index) => {
+        formData.append('photos', photo.file);
+        formData.append('display_orders', index);
+    });
+
+    const response = await fetch(`/api/cars/${carId}/photos`, {
+        method: 'POST',
+        headers: {
+            'X-Tenant-ID': tenantId
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || 'Failed to upload photos');
+    }
+
+    return await response.json();
+}
+</script>
+{{end}}

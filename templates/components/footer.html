@@ -1,0 +1,26 @@
+{{define "footer"}}
+{{/*
+  Footer Component - Minimal Design inspired by PrimaMobil.id
+  Usage: {{template "footer" .}}
+  Expects: .SiteName
+*/}}
+<footer class="bg-white border-t border-gray-200 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center text-sm text-gray-600">
+      <p>
+        © <span id="currentYear">2025</span> {{.SiteName}}. All rights reserved.
+      </p>
+      <p class="mt-2">
+        Powered by <a href="https://lumiku.com/" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium">Lumiku AutoLeads</a>
+        <span class="mx-2">•</span>
+        <span class="text-gray-500">Trusted by thousands</span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Update current year dynamically
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
+</script>
+{{end}}

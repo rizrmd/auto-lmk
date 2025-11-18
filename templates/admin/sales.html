@@ -1,0 +1,356 @@
+{{define "content"}}
+<div class="mb-4 md:mb-6 flex items-center justify-between">
+    <div class="flex-1 min-w-0">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Manajemen Tim Sales</h1>
+        <p class="hidden md:block text-gray-600 mt-1">Kelola anggota tim sales Anda</p>
+    </div>
+    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg flex items-center space-x-2 transition-colors flex-shrink-0"
+            onclick="openAddModal()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <span class="hidden sm:inline">Tambah Sales</span>
+        <span class="sm:hidden">Tambah</span>
+    </button>
+</div>
+
+<!-- Sales Table -->
+{{template "sales_table" .}}
+
+<!-- Add Sales Modal -->
+<div id="add-sales-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+         x-data="salesFormValidation()">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Tambah Sales</h3>
+            <div id="form-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
+            <form @submit.prevent="validateAndSubmit"
+                  hx-post="/api/sales"
+                  hx-ext="json-enc"
+                  hx-on::after-request="if(event.detail.xhr.status === 201) { htmx.ajax('GET', '/admin/sales/table', {target:'#sales-table', swap:'outerHTML'}); closeAddModal(); document.getElementById('form-error').classList.add('hidden'); resetForm(); } else if(event.detail.xhr.status >= 400) { handleServerError(event.detail.xhr); }"
+                  class="space-y-4">
+                <!-- Phone Number Field -->
+                <div>
+                    <label for="phone_number" class="block text-sm font-medium text-gray-700">
+                        Nomor Telepon <span class="text-red-600">*</span>
+                    </label>
+                    <input type="tel"
+                           id="phone_number"
+                           name="phone_number"
+                           x-model="form.phone_number"
+                           @blur="validatePhone"
+                           required
+                           pattern="^(\+?[1-9]\d{1,14}|08\d{8,11})$"
+                           maxlength="15"
+                           placeholder="+628123456789 atau 08123456789"
+                           :class="{'border-red-500': errors.phone_number, 'border-gray-300': !errors.phone_number}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.phone_number"
+                       x-text="errors.phone_number"
+                       class="text-red-600 text-sm mt-1 flex items-center">
+                        <span class="mr-1">⚠️</span>
+                    </p>
+                </div>
+
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">
+                        Nama <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           x-model="form.name"
+                           @blur="validateName"
+                           required
+                           minlength="2"
+                           maxlength="100"
+                           pattern="^[a-zA-Z\s]+$"
+                           placeholder="Nama lengkap"
+                           :class="{'border-red-500': errors.name, 'border-gray-300': !errors.name}"
+                           class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p x-show="errors.name"
+                       x-text="errors.name"
+                       class="text-red-600 text-sm mt-1 flex items-center">
+                        <span class="mr-1">⚠️</span>
+                    </p>
+                </div>
+
+                <!-- Role Field (Optional) -->
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">
+                        Jabatan
+                    </label>
+                    <input type="text"
+                           id="role"
+                           name="role"
+                           x-model="form.role"
+                           maxlength="100"
+                           placeholder="Sales Executive (opsional)"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button"
+                            @click="closeAddModal(); resetForm();"
+                            :disabled="isSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            :disabled="isSubmitting || !isFormValid()"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                        <span x-show="!isSubmitting">Simpan</span>
+                        <span x-show="isSubmitting" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Alpine.js Form Validation Component
+function salesFormValidation() {
+    return {
+        form: {
+            phone_number: '',
+            name: '',
+            role: ''
+        },
+        errors: {},
+        isSubmitting: false,
+
+        validatePhone() {
+            const phoneRegex = /^(\+?[1-9]\d{1,14}|08\d{8,11})$/;
+            const trimmed = this.form.phone_number.trim();
+
+            if (!trimmed) {
+                this.errors.phone_number = 'Nomor telepon wajib diisi';
+                return false;
+            }
+
+            if (!phoneRegex.test(trimmed)) {
+                this.errors.phone_number = 'Format nomor tidak valid. Gunakan +628xxx atau 08xxx';
+                return false;
+            }
+
+            delete this.errors.phone_number;
+            return true;
+        },
+
+        validateName() {
+            const nameRegex = /^[a-zA-Z\s]+$/;
+            const trimmed = this.form.name.trim();
+
+            if (!trimmed) {
+                this.errors.name = 'Nama wajib diisi';
+                return false;
+            }
+
+            if (trimmed.length < 2) {
+                this.errors.name = 'Nama minimal 2 karakter';
+                return false;
+            }
+
+            if (trimmed.length > 100) {
+                this.errors.name = 'Nama maksimal 100 karakter';
+                return false;
+            }
+
+            if (!nameRegex.test(trimmed)) {
+                this.errors.name = 'Nama hanya boleh berisi huruf dan spasi';
+                return false;
+            }
+
+            delete this.errors.name;
+            return true;
+        },
+
+        isFormValid() {
+            // Check if all required fields are filled and have no errors
+            return this.form.phone_number.trim() !== '' &&
+                   this.form.name.trim() !== '' &&
+                   Object.keys(this.errors).length === 0;
+        },
+
+        validateAndSubmit(event) {
+            // Validate all fields
+            const phoneValid = this.validatePhone();
+            const nameValid = this.validateName();
+
+            if (phoneValid && nameValid) {
+                // Allow form submission
+                this.isSubmitting = true;
+                // HTMX will handle the actual submission
+                return true;
+            } else {
+                // Prevent submission
+                event.preventDefault();
+                return false;
+            }
+        },
+
+        resetForm() {
+            this.form = {
+                phone_number: '',
+                name: '',
+                role: ''
+            };
+            this.errors = {};
+            this.isSubmitting = false;
+        }
+    };
+}
+
+function openAddModal() {
+    document.getElementById('add-sales-modal').classList.remove('hidden');
+}
+
+function closeAddModal() {
+    document.getElementById('add-sales-modal').classList.add('hidden');
+    document.querySelector('#add-sales-modal form').reset();
+    document.getElementById('form-error').classList.add('hidden');
+    document.getElementById('form-error').textContent = '';
+}
+
+function resetForm() {
+    // Called from Alpine component
+    document.querySelector('#add-sales-modal form').reset();
+}
+
+function handleServerError(xhr) {
+    const errorDiv = document.getElementById('form-error');
+    try {
+        const response = JSON.parse(xhr.responseText);
+        errorDiv.textContent = response.error || xhr.responseText;
+    } catch (e) {
+        errorDiv.textContent = xhr.responseText;
+    }
+    errorDiv.classList.remove('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('add-sales-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAddModal();
+    }
+});
+</script>
+{{end}}
+
+{{define "sales_table"}}
+<div id="sales-table">
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    {{if .Sales}}
+    <!-- Desktop Table View (hidden on mobile) -->
+    <table class="hidden md:table min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nama
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nomor Telepon
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Jabatan
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tanggal Daftar
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Aksi
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .Sales}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{.Name}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{.PhoneNumber}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{if .Role}}{{.Role}}{{else}}-{{end}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">{{.RegisteredAt.Format "02 Jan 2006"}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button hx-delete="/api/sales/{{.ID}}"
+                            hx-confirm="Yakin ingin menghapus {{.Name}} dari tim sales?"
+                            hx-on::after-request="if(event.detail.xhr.status === 204) { htmx.ajax('GET', '/admin/sales/table', {target:'#sales-table', swap:'outerHTML'}); }"
+                            class="text-red-600 hover:text-red-900" title="Hapus">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+
+    <!-- Mobile Card View (hidden on desktop) -->
+    <div class="md:hidden divide-y divide-gray-200">
+        {{range .Sales}}
+        <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex-1">
+                    <h3 class="text-base font-semibold text-gray-900">{{.Name}}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{.PhoneNumber}}</p>
+                </div>
+                <button hx-delete="/api/sales/{{.ID}}"
+                        hx-confirm="Yakin ingin menghapus {{.Name}} dari tim sales?"
+                        hx-on::after-request="if(event.detail.xhr.status === 204) { htmx.ajax('GET', '/admin/sales/table', {target:'#sales-table', swap:'outerHTML'}); }"
+                        class="text-red-600 hover:text-red-900 p-2" title="Hapus">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                    <span class="text-gray-500">Jabatan:</span>
+                    <span class="ml-1 text-gray-900">{{if .Role}}{{.Role}}{{else}}-{{end}}</span>
+                </div>
+                <div>
+                    <span class="text-gray-500">Terdaftar:</span>
+                    <span class="ml-1 text-gray-900">{{.RegisteredAt.Format "02 Jan 2006"}}</span>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <!-- Empty State -->
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada sales team</h3>
+        <p class="mt-1 text-sm text-gray-500">Klik 'Tambah Sales' untuk menambahkan anggota tim pertama</p>
+        <div class="mt-6">
+            <button class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    onclick="openAddModal()">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Tambah Sales
+            </button>
+        </div>
+    </div>
+    {{end}}
+</div>
+</div>
+{{end}}

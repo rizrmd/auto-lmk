@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -34,22 +35,27 @@ func main() {
 		fmt.Printf("Failed to load config: %v\n", err)
 		os.Exit(1)
 	}
+	fmt.Printf("Config loaded successfully: LLM Provider = %s\n", cfg.LLM.Provider)
 
 	// Setup logger
 	logger.Setup(cfg.Server.Env)
 	slog.Info("starting application", "env", cfg.Server.Env, "port", cfg.Server.Port)
 
 	// Connect to database
+	fmt.Printf("Connecting to database...\n")
 	db, err := database.Connect(cfg.DatabaseURL())
 	if err != nil {
 		slog.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
 	defer db.Close()
+	fmt.Printf("Database connected successfully\n")
 
 	// Initialize LLM provider if configured
 	var llmProvider llm.Provider
+	fmt.Printf("LLM Provider: %s, API Key: %s\n", cfg.LLM.Provider, cfg.LLM.APIKey)
 	if cfg.LLM.Provider != "" && cfg.LLM.APIKey != "" {
+		fmt.Printf("Initializing LLM provider...\n")
 		llmCfg := llm.Config{
 			Provider:    cfg.LLM.Provider,
 			APIKey:      cfg.LLM.APIKey,
@@ -60,11 +66,14 @@ func main() {
 		llmProvider, err = llm.NewProvider(llmCfg)
 		if err != nil {
 			slog.Warn("failed to initialize LLM provider", "error", err, "provider", cfg.LLM.Provider)
+			fmt.Printf("LLM provider initialization failed: %v\n", err)
 		} else {
 			slog.Info("LLM provider initialized", "provider", cfg.LLM.Provider, "model", cfg.LLM.Model)
+			fmt.Printf("LLM provider initialized successfully\n")
 		}
 	} else {
 		slog.Warn("LLM provider not configured, bot functionality will be disabled")
+		fmt.Printf("LLM provider not configured\n")
 	}
 
 	// Setup router
@@ -74,8 +83,8 @@ func main() {
 	srv := &http.Server{
 		Addr:         ":" + cfg.Server.Port,
 		Handler:      r,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 90 * time.Second, // Increased for AI generation (can take 30-60s)
 		IdleTimeout:  60 * time.Second,
 	}
 
@@ -137,12 +146,34 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 		w.Write([]byte("OK"))
 	})
 
+	// Get working directory
+	workDir, _ := os.Getwd()
+
+	// Static files with proper MIME types
+	filesDir := http.Dir(workDir + "/static")
+	fileServer(r, "/static", filesDir)
+
+	// Serve uploaded files
+	uploadsDir := http.Dir(workDir + "/uploads")
+	r.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(uploadsDir)))
+
 	// Initialize repositories
 	tenantRepo := repository.NewTenantRepository(db.DB)
 	carRepo := repository.NewCarRepository(db.DB)
 	salesRepo := repository.NewSalesRepository(db.DB)
 	conversationRepo := repository.NewConversationRepository(db.DB)
-	leadRepo := repository.NewLeadRepository(db.DB)
+	analyticsRepo := repository.NewAnalyticsRepository(db.DB)
+	analyticsHandler := handler.NewAnalyticsHandler(analyticsRepo)
+	blogRepo := repository.NewBlogRepository(db.DB)
+
+	// Initialize WhatsApp settings repository
+	whatsappSettingsRepo := repository.NewWhatsAppSettingsRepository(db.DB)
+
+	// Initialize branding repository
+	brandingRepo := repository.NewBrandingRepository(db.DB)
+
+	// Initialize showroom repository
+	showroomRepo := repository.NewShowroomRepository(db.DB)
 
 	// Initialize services
 	carService := service.NewCarService(carRepo)
@@ -161,11 +192,10 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 			// Initialize bot with adapters
 			convAdapter := llm.NewConversationRepoAdapter(conversationRepo)
 			carAdapter := llm.NewCarRepoAdapter(carRepo)
-			leadAdapter := llm.NewLeadRepoAdapter(leadRepo)
-			bot := llm.NewBot(llmProvider, convAdapter, carAdapter, leadAdapter)
+			bot := llm.NewBot(llmProvider, convAdapter, carAdapter)
 
 			// Initialize WhatsApp service
-			waService = service.NewWhatsAppService(waClient, bot, salesRepo, conversationRepo, carService, leadRepo)
+			waService = service.NewWhatsAppService(waClient, bot, salesRepo, conversationRepo, carService)
 
 			// Set message handler
 			waClient.SetMessageHandler(waService.ProcessIncomingMessage)
@@ -176,13 +206,34 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 
 	// Initialize handlers
 	tenantHandler := handler.NewTenantHandler(tenantRepo)
-	carHandler := handler.NewCarHandler(carRepo)
-	pageHandler := handler.NewPageHandler(carRepo, tenantRepo)
+	var carHandler *handler.CarHandler
+	if llmProvider != nil {
+		carHandler = handler.NewCarHandlerWithAnalyticsAndLLM(carRepo, analyticsRepo, llmProvider)
+	} else {
+		carHandler = handler.NewCarHandlerWithAnalytics(carRepo, analyticsRepo)
+	}
+	salesHandler := handler.NewSalesHandler(salesRepo)
+	conversationHandler := handler.NewConversationHandler(conversationRepo)
+	pageHandler := handler.NewPageHandler(carRepo, salesRepo, tenantRepo, conversationRepo, blogRepo, brandingRepo, showroomRepo)
+
+	// Blog handler (with LLM support if available)
+	var blogHandler *handler.BlogHandler
+	if llmProvider != nil {
+		blogHandler = handler.NewBlogHandlerWithLLM(blogRepo, llmProvider)
+	} else {
+		blogHandler = handler.NewBlogHandler(blogRepo)
+	}
+
+	// Branding handler
+	brandingHandler := handler.NewBrandingHandler(brandingRepo)
+
+	// Showroom handler
+	showroomHandler := handler.NewShowroomHandler(showroomRepo)
 
 	// WhatsApp handler (if WhatsApp client is initialized)
 	var whatsappHandler *handler.WhatsAppHandler
 	if waClient != nil {
-		whatsappHandler = handler.NewWhatsAppHandler(waClient, tenantRepo)
+		whatsappHandler = handler.NewWhatsAppHandlerWithSettings(waClient, tenantRepo, whatsappSettingsRepo)
 	}
 
 	// API routes
@@ -209,31 +260,37 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 			// Car management
 			r.Route("/cars", func(r chi.Router) {
 				r.Post("/", carHandler.Create)
+				r.Post("/ai-generate", carHandler.AIGenerate)
 				r.Get("/", carHandler.List)
 				r.Get("/search", carHandler.Search)
 				r.Get("/{id}", carHandler.Get)
 				r.Put("/{id}", carHandler.Update)
 				r.Delete("/{id}", carHandler.Delete)
+				r.Post("/{id}/photos", carHandler.UploadPhotos)
+				r.Delete("/photos/{photoId}", carHandler.DeletePhoto)
 			})
 
-			// Sales management (TODO: implement handler)
+			// Sales management
 			r.Route("/sales", func(r chi.Router) {
-				// r.Post("/", salesHandler.Create)
-				// r.Get("/", salesHandler.List)
-				// r.Delete("/{id}", salesHandler.Delete)
+				r.Post("/", salesHandler.Create)
+				r.Get("/", salesHandler.List)
+				r.Get("/stats", salesHandler.Stats)
+				r.Delete("/{id}", salesHandler.Delete)
 			})
 
-			// Leads (TODO: implement handler)
-			r.Route("/leads", func(r chi.Router) {
-				// r.Get("/", leadHandler.List)
-				// r.Get("/{id}", leadHandler.Get)
-				// r.Put("/{id}/status", leadHandler.UpdateStatus)
-			})
-
-			// Conversations (TODO: implement handler)
+			// Conversations
 			r.Route("/conversations", func(r chi.Router) {
-				// r.Get("/", conversationHandler.List)
-				// r.Get("/{id}", conversationHandler.Get)
+				r.Get("/", conversationHandler.List)
+				r.Get("/stats", conversationHandler.Stats)
+				r.Get("/{id}", conversationHandler.Get)
+			})
+
+			// Analytics admin routes (tenant-scoped)
+			r.Route("/admin/analytics", func(r chi.Router) {
+				r.Get("/search-keywords", analyticsHandler.GetTopKeywords)
+				r.Get("/car-views", analyticsHandler.GetTopCars)
+				r.Get("/trends", analyticsHandler.GetTrends)
+				r.Get("/export", analyticsHandler.ExportCSV)
 			})
 
 			// WhatsApp admin routes (tenant-scoped)
@@ -244,28 +301,104 @@ func setupRouter(cfg *config.Config, db *database.DB, llmProvider llm.Provider) 
 					r.Post("/disconnect", whatsappHandler.Disconnect)
 					r.Post("/test", whatsappHandler.SendTestMessage)
 					r.Get("/qr/{tenant_id}", whatsappHandler.GetQRCodeImage)
+					r.Get("/settings", whatsappHandler.GetSettings)
+					r.Put("/settings", whatsappHandler.UpdateSettings)
+					r.Get("/effective-number", whatsappHandler.GetEffectiveNumber)
 				})
 			}
+
+			// Blog admin routes (tenant-scoped)
+			r.Route("/admin/blog", func(r chi.Router) {
+				r.Get("/", blogHandler.List)
+				r.Post("/", blogHandler.Create)
+				r.Get("/{id}", blogHandler.Get)
+				r.Put("/{id}", blogHandler.Update)
+				r.Delete("/{id}", blogHandler.Delete)
+				r.Post("/generate-ai", blogHandler.GenerateAI)
+			})
+
+			// Branding admin routes (tenant-scoped)
+			r.Route("/admin/branding", func(r chi.Router) {
+				r.Get("/", brandingHandler.GetSettings)
+				r.Put("/", brandingHandler.UpdateSettings)
+				r.Post("/upload-logo", brandingHandler.UploadLogo)
+				r.Post("/upload-favicon", brandingHandler.UploadFavicon)
+			})
+
+			// Showroom admin routes (tenant-scoped)
+			r.Route("/admin/showroom", func(r chi.Router) {
+				r.Get("/", showroomHandler.GetAdminSettings)
+				r.Put("/", showroomHandler.UpdateSettings)
+			})
+
+			// Public showroom route
+			r.Get("/showroom", showroomHandler.GetSettings)
 		})
 	})
 
-	// Public frontend routes
-	r.Get("/", pageHandler.Home)
-	r.Get("/mobil", pageHandler.Cars)
-	r.Get("/mobil/{id}", pageHandler.CarDetail)
-	r.Get("/kontak", pageHandler.Contact)
+	// Public frontend routes (with tenant middleware for multi-tenant support)
+	r.Group(func(r chi.Router) {
+		r.Use(appMiddleware.TenantExtractor(db.DB))
 
-	// Admin frontend routes
+		r.Get("/", pageHandler.Home)
+		r.Get("/mobil", pageHandler.Cars)
+		r.Get("/mobil/{id}", pageHandler.CarDetail)
+		r.Get("/kontak", pageHandler.Contact)
+		r.Get("/blog", pageHandler.BlogList)
+		r.Get("/blog/{slug}", pageHandler.BlogDetail)
+	})
+
+	// Logout route
+	r.Get("/logout", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+
+	// Admin frontend routes (with tenant middleware)
 	r.Route("/admin", func(r chi.Router) {
+		r.Use(appMiddleware.TenantExtractor(db.DB))
+
 		r.Get("/", pageHandler.AdminDashboard)
 		r.Get("/dashboard", pageHandler.AdminDashboard)
 		r.Get("/cars", pageHandler.AdminCars)
-		r.Get("/leads", pageHandler.AdminLeads)
+		r.Get("/analytics", pageHandler.AdminAnalytics)
+		r.Get("/cars/new", pageHandler.AdminCarsNew)
+		r.Get("/cars/{id}/edit", pageHandler.AdminCarsEdit)
+		r.Get("/cars/{id}/edit", pageHandler.AdminCarsEdit)
+		r.Get("/sales", pageHandler.AdminSales)
+		r.Get("/sales/new", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/admin/sales", http.StatusSeeOther)
+		})
+		r.Get("/sales/table", pageHandler.AdminSalesTable)
 		r.Get("/whatsapp", pageHandler.AdminWhatsApp)
+		r.Get("/conversations", pageHandler.AdminConversations)
+		r.Get("/conversations/table", pageHandler.AdminConversationsTable)
+		r.Get("/conversations/{id}", pageHandler.AdminConversationDetail)
+		r.Get("/blog", pageHandler.AdminBlog)
+		r.Get("/blog/new", pageHandler.AdminBlogNew)
+		r.Get("/blog/{id}/edit", pageHandler.AdminBlogEdit)
+		r.Get("/settings", pageHandler.AdminSettings)
+		r.Get("/branding", pageHandler.AdminBranding)
+		r.Get("/showroom", pageHandler.AdminShowroom)
 	})
 
 	// Suppress unused variable warnings (will be used when handlers are implemented)
 	_ = waService
 
 	return r
+}
+
+// fileServer sets up a http.FileServer handler to serve static files with proper MIME types
+func fileServer(r chi.Router, path string, root http.FileSystem) {
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }

@@ -1,0 +1,309 @@
+{{define "content"}}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Informasi Showroom</h1>
+    <p class="text-gray-600 mt-1">Kelola alamat dan informasi kontak showroom Anda</p>
+</div>
+
+<!-- Showroom Settings Form -->
+<div class="bg-white rounded-lg shadow p-6" x-data="showroomFormData()">
+    <form @submit.prevent="saveSettings" class="space-y-6">
+        <!-- Address Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="text-xl mr-2">📍</span>
+                Alamat Showroom
+            </h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Alamat Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        x-model="form.address"
+                        rows="3"
+                        placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan, Kota, Provinsi 12345"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    ></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Alamat lengkap showroom yang akan ditampilkan di halaman kontak</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Telepon
+                        </label>
+                        <input
+                            type="tel"
+                            x-model="form.phone"
+                            placeholder="021-12345678 atau 08123456789"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Nomor telepon showroom</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            x-model="form.email"
+                            placeholder="showroom@example.com"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Email untuk pertanyaan pelanggan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Hours Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="text-xl mr-2">🕒</span>
+                Jam Operasional
+            </h2>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Jam Buka
+                </label>
+                <textarea
+                    x-model="form.business_hours"
+                    rows="4"
+                    placeholder="Senin - Jumat: 09:00 - 18:00&#10;Sabtu: 09:00 - 15:00&#10;Minggu: Tutup"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                ></textarea>
+                <p class="text-xs text-gray-500 mt-1">Jam operasional showroom (satu baris per hari)</p>
+            </div>
+        </div>
+
+        <!-- Location Coordinates Section -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="text-xl mr-2">🗺️</span>
+                Koordinat Peta
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Latitude
+                    </label>
+                    <input
+                        type="number"
+                        step="0.000001"
+                        x-model.number="form.latitude"
+                        placeholder="-6.200000"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Koordinat latitude (cth: -6.200000)</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Longitude
+                    </label>
+                    <input
+                        type="number"
+                        step="0.000001"
+                        x-model.number="form.longitude"
+                        placeholder="106.816666"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Koordinat longitude (cth: 106.816666)</p>
+                </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p class="text-sm text-blue-800">
+                    <strong>💡 Tips:</strong> Dapatkan koordinat dari Google Maps:
+                </p>
+                <ol class="text-sm text-blue-700 mt-2 ml-4 space-y-1 list-decimal">
+                    <li>Buka Google Maps dan cari lokasi showroom</li>
+                    <li>Klik kanan pada lokasi dan pilih koordinat yang muncul</li>
+                    <li>Koordinat akan tersalin (format: latitude, longitude)</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Map Embed (Optional) -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="text-xl mr-2">🔗</span>
+                Embed Peta (Opsional)
+            </h2>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Google Maps Embed URL
+                </label>
+                <input
+                    type="url"
+                    x-model="form.map_embed"
+                    placeholder="https://www.google.com/maps/embed?pb=..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">URL embed dari Google Maps (opsional, jika tidak pakai koordinat)</p>
+            </div>
+
+            <div class="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                <p class="text-sm text-gray-700">
+                    <strong>Catatan:</strong> Jika koordinat latitude/longitude sudah diisi, peta akan ditampilkan otomatis menggunakan Leaflet.js. Field ini hanya diperlukan jika ingin menggunakan Google Maps embed.
+                </p>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+            <button
+                type="submit"
+                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                :disabled="loading"
+                :class="{ 'opacity-50 cursor-not-allowed': loading }"
+            >
+                <span x-show="!loading">Simpan Pengaturan</span>
+                <span x-show="loading">Menyimpan...</span>
+            </button>
+
+            <p x-show="message" x-text="message" :class="messageType === 'success' ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium"></p>
+        </div>
+    </form>
+
+    <!-- Preview Map -->
+    <div x-show="form.latitude && form.longitude" class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">Preview Peta</h3>
+        <div id="map-preview" class="h-64 rounded-lg border border-gray-300"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+function showroomFormData() {
+    return {
+        form: {
+            address: '',
+            phone: '',
+            email: '',
+            business_hours: '',
+            latitude: null,
+            longitude: null,
+            map_embed: ''
+        },
+        loading: false,
+        message: '',
+        messageType: '',
+        map: null,
+        marker: null,
+
+        init() {
+            this.loadSettings();
+
+            // Watch for coordinate changes to update map
+            this.$watch('form.latitude', () => this.updateMapPreview());
+            this.$watch('form.longitude', () => this.updateMapPreview());
+        },
+
+        async loadSettings() {
+            try {
+                const response = await fetch('/api/admin/showroom');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.form.address = data.address || '';
+                    this.form.phone = data.phone || '';
+                    this.form.email = data.email || '';
+                    this.form.business_hours = data.business_hours || '';
+                    this.form.latitude = data.latitude || null;
+                    this.form.longitude = data.longitude || null;
+                    this.form.map_embed = data.map_embed || '';
+
+                    // Initialize map preview if coordinates exist
+                    setTimeout(() => this.updateMapPreview(), 100);
+                }
+            } catch (error) {
+                console.error('Failed to load showroom settings:', error);
+            }
+        },
+
+        async saveSettings() {
+            this.loading = true;
+            this.message = '';
+
+            try {
+                const payload = {
+                    address: this.form.address || null,
+                    phone: this.form.phone || null,
+                    email: this.form.email || null,
+                    business_hours: this.form.business_hours || null,
+                    latitude: this.form.latitude || null,
+                    longitude: this.form.longitude || null,
+                    map_embed: this.form.map_embed || null
+                };
+
+                const response = await fetch('/api/admin/showroom', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    this.message = 'Pengaturan berhasil disimpan!';
+                    this.messageType = 'success';
+                } else {
+                    const error = await response.text();
+                    this.message = 'Gagal menyimpan: ' + error;
+                    this.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                this.message = 'Terjadi kesalahan saat menyimpan';
+                this.messageType = 'error';
+            } finally {
+                this.loading = false;
+
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    this.message = '';
+                }, 5000);
+            }
+        },
+
+        updateMapPreview() {
+            if (!this.form.latitude || !this.form.longitude) {
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                    this.marker = null;
+                }
+                return;
+            }
+
+            const lat = parseFloat(this.form.latitude);
+            const lng = parseFloat(this.form.longitude);
+
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            // Initialize map if not exists
+            if (!this.map) {
+                this.map = L.map('map-preview').setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.map);
+
+                this.marker = L.marker([lat, lng]).addTo(this.map);
+            } else {
+                // Update existing map
+                this.map.setView([lat, lng], 15);
+                this.marker.setLatLng([lat, lng]);
+            }
+        }
+    };
+}
+</script>
+{{end}}

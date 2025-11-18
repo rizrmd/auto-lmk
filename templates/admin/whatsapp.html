@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-50" x-data="{
     status: 'loading',
@@ -206,20 +207,43 @@
 </div>
 
 <script>
-// Convert QR code text to image using a QR library
-// For now, just display the text - in production, use qrcode.js or similar
-document.addEventListener('alpine:init', () => {
-    // Watch for qrCode changes
-    Alpine.effect(() => {
-        const qr = Alpine.store('qrCode');
-        if (qr) {
-            // TODO: Generate actual QR image from text
-            // For now, display as text
+// QR Code generation
+let qrCodeInstance = null;
+
+// Watch for QR code updates
+document.addEventListener('alpine:initialized', () => {
+    // Use MutationObserver to watch for qrCode changes
+    const observer = new MutationObserver(() => {
+        setTimeout(() => {
             const qrDiv = document.getElementById('qrcode');
-            if (qrDiv) {
-                qrDiv.innerHTML = `<pre class="text-xs break-all">${qr}</pre>`;
+            const qrCodeData = window.currentQRCode;
+
+            if (qrDiv && qrCodeData && qrCodeData !== 'PAIRED_SUCCESSFULLY') {
+                // Clear previous QR code
+                qrDiv.innerHTML = '';
+
+                // Generate new QR code
+                try {
+                    qrCodeInstance = new QRCode(qrDiv, {
+                        text: qrCodeData,
+                        width: 256,
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (e) {
+                    console.error('QR Code generation failed:', e);
+                    qrDiv.innerHTML = '<p class="text-red-500">Failed to generate QR code</p>';
+                }
             }
-        }
+        }, 100);
+    });
+
+    observer.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true
     });
 });
 </script>

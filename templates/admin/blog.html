@@ -1,0 +1,179 @@
+{{define "content"}}
+<div class="mb-4 md:mb-6 flex items-center justify-between">
+    <div class="flex-1 min-w-0">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Kelola Blog</h1>
+        <p class="hidden md:block text-gray-600 mt-1">Buat dan kelola artikel blog Anda</p>
+    </div>
+    <a href="/admin/blog/new" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg flex items-center space-x-2 transition-colors flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <span class="hidden sm:inline">Tambah Post Baru</span>
+        <span class="sm:hidden">Tambah</span>
+    </a>
+</div>
+
+<!-- Blog Posts Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" id="blog-table"
+               hx-get="/api/admin/blog"
+               hx-trigger="load"
+               hx-swap="innerHTML"
+               hx-target="#blog-tbody">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Judul
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                        Status
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                        Tanggal Publish
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Aksi
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="blog-tbody" class="bg-white divide-y divide-gray-200">
+                <!-- Loading state -->
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                        <div class="flex items-center justify-center space-x-2">
+                            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Memuat data...</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mt-5">Hapus Post Blog</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    Apakah Anda yakin ingin menghapus post blog ini? Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="delete-confirm-btn"
+                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Hapus
+                </button>
+                <button onclick="closeDeleteModal()"
+                        class="mt-3 px-4 py-2 bg-white text-gray-700 text-base font-medium rounded-md w-full shadow-sm border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deletePostId = null;
+
+    function openDeleteModal(id) {
+        deletePostId = id;
+        document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        deletePostId = null;
+        document.getElementById('delete-modal').classList.add('hidden');
+    }
+
+    function deletePost() {
+        if (!deletePostId) return;
+
+        fetch(`/api/admin/blog/${deletePostId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Tenant-ID': document.querySelector('meta[name="tenant-id"]')?.content || ''
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Reload the table
+                htmx.ajax('GET', '/api/admin/blog', {target: '#blog-tbody', swap: 'innerHTML'});
+                closeDeleteModal();
+            } else {
+                alert('Gagal menghapus post blog');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menghapus post blog');
+        });
+    }
+
+    // Attach event listener to confirm button
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('delete-confirm-btn').addEventListener('click', deletePost);
+    });
+
+    // Template for blog rows (rendered by HTMX from API)
+    htmx.on('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'blog-tbody') {
+            const data = JSON.parse(evt.detail.xhr.response);
+
+            if (!data || data.length === 0) {
+                evt.detail.target.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            Belum ada post blog. <a href="/admin/blog/new" class="text-blue-500 hover:underline">Buat post pertama Anda</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            evt.detail.target.innerHTML = data.map(post => {
+                const publishedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                }) : '-';
+
+                const statusBadge = post.status === 'published'
+                    ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Published</span>'
+                    : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Draft</span>';
+
+                return `
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">${post.title}</div>
+                            <div class="text-sm text-gray-500 truncate max-w-xs">${post.excerpt || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
+                            ${publishedDate}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="/admin/blog/${post.id}/edit" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                            <button onclick="openDeleteModal(${post.id})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
+</script>
+{{end}}

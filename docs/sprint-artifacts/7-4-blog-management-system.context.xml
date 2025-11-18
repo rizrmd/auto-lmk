@@ -1,0 +1,119 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>4</storyId>
+    <title>blog-management-system</title>
+    <status>backlog</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/7-4-blog-management-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As an admin user</asA>
+    <iWant>a blog management system to create and manage blog posts</iWant>
+    <soThat>I can share automotive content and improve SEO</soThat>
+    <tasks>- Create blog CRUD in admin
+- Add AI content generation
+- Create frontend blog pages
+- Implement SEO for blog posts
+- Test blog functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I am admin, when I access the blog menu, then I see a list of all blog posts with create/edit/delete options.
+
+2. Given I create a new post, when I fill the form, then I can add title, content, excerpt, and publish status.
+
+3. Given I have content, when I save as draft, then post is saved but not visible on frontend.
+
+4. Given I publish a post, when I set status to published, then post appears on frontend blog page.
+
+5. Given I want AI help, when I click "Generate with AI", then system creates blog content based on my topic input.
+
+6. Given visitors access /blog, when they browse, then they see published posts in a grid with title, excerpt, and read more links.
+
+7. Given visitors click a post, when they view /blog/{slug}, then they see full post content with meta tags for SEO.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>FR-7.4: Blog Management System - Admin blog creation with AI assistance</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>internal/handler/blog_handler.go</path>
+        <kind>handler</kind>
+        <symbol>BlogHandler</symbol>
+        <lines>1-150</lines>
+        <reason>New handler for blog CRUD operations and AI generation</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/blog_repository.go</path>
+        <kind>repository</kind>
+        <symbol>BlogRepository</symbol>
+        <lines>1-120</lines>
+        <reason>Repository for blog posts management</reason>
+      </artifact>
+      <artifact>
+        <path>templates/admin/blog/</path>
+        <kind>template</kind>
+        <symbol>blog admin templates</symbol>
+        <lines>1-200</lines>
+        <reason>Admin templates for blog management</reason>
+      </artifact>
+      <artifact>
+        <path>templates/blog/</path>
+        <kind>template</kind>
+        <symbol>blog frontend templates</symbol>
+        <lines>1-150</lines>
+        <reason>Frontend templates for blog display</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/gorilla/mux" version="latest">HTTP router</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Use existing LLM provider for AI generation
+- Implement tenant isolation for blog posts
+- Create SEO-friendly URLs with slugs
+- Support rich text content
+- Optimize for performance with pagination</constraints>
+  <interfaces>
+    <interface>
+      <name>Blog Admin API</name>
+      <kind>HTTP REST</kind>
+      <signature>GET/POST/PUT/DELETE /api/admin/blog</signature>
+      <path>internal/handler/blog_handler.go</path>
+    </interface>
+    <interface>
+      <name>Blog Frontend API</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /api/blog</signature>
+      <path>internal/handler/blog_handler.go</path>
+    </interface>
+    <interface>
+      <name>AI Content Generation</name>
+      <kind>HTTP POST</kind>
+      <signature>POST /api/admin/blog/generate</signature>
+      <path>internal/handler/blog_handler.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing for unit tests, integration tests for API endpoints</standards>
+    <locations>Unit tests in *_test.go files, integration tests in tests/ directory</locations>
+    <ideas>- Test blog CRUD operations
+- Test AI content generation
+- Test SEO meta tags
+- Test tenant isolation
+- Test frontend display</ideas>
+  </tests>
+</story-context>

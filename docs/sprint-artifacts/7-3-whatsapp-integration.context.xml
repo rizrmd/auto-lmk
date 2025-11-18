@@ -1,0 +1,102 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>3</storyId>
+    <title>whatsapp-integration</title>
+    <status>backlog</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/7-3-whatsapp-integration.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a website visitor</asA>
+    <iWant>easy WhatsApp contact options throughout the site</iWant>
+    <soThat>I can quickly connect with sales when interested in cars</soThat>
+    <tasks>- Implement floating WhatsApp button
+- Add admin settings for WA numbers
+- Integrate with existing bot system
+- Add lead tracking for WA contacts
+- Test fallback functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I am on any public page, when I scroll or look for contact, then I see a floating WhatsApp button in bottom-right corner.
+
+2. Given I click the WhatsApp button, when the AI bot is available, then I am connected to the WhatsApp bot with a greeting message.
+
+3. Given the AI bot is down, when I click the button, then I am redirected to the designated sales WhatsApp number as fallback.
+
+4. Given I am admin, when I access settings, then I can configure the primary bot number and fallback sales number.
+
+5. Given WhatsApp integration is configured, when conversation starts, then the system tracks this as a lead in admin dashboard.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>FR-7.3: WhatsApp Integration - Floating WA button with bot and fallback</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>templates/layouts/base.html</path>
+        <kind>template</kind>
+        <symbol>floating whatsapp button</symbol>
+        <lines>1-50</lines>
+        <reason>Floating WhatsApp button component for all public pages</reason>
+      </artifact>
+      <artifact>
+        <path>internal/handler/whatsapp_settings_handler.go</path>
+        <kind>handler</kind>
+        <symbol>WhatsAppSettingsHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Handler for admin WhatsApp settings management</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/whatsapp_settings_repository.go</path>
+        <kind>repository</kind>
+        <symbol>WhatsAppSettingsRepository</symbol>
+        <lines>1-80</lines>
+        <reason>Repository for storing and retrieving WhatsApp settings per tenant</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/go-chi/chi/v5" version="latest">HTTP router</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Use existing WhatsApp bot infrastructure
+- Implement tenant-specific settings
+- Ensure responsive floating button design
+- Add proper error handling for bot status checks
+- Track leads in existing conversation system</constraints>
+  <interfaces>
+    <interface>
+      <name>WhatsApp Settings API</name>
+      <kind>HTTP GET/POST</kind>
+      <signature>GET/POST /api/admin/whatsapp-settings</signature>
+      <path>internal/handler/whatsapp_settings_handler.go</path>
+    </interface>
+    <interface>
+      <name>Bot Status Check</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /api/whatsapp/bot-status</signature>
+      <path>internal/handler/whatsapp_handler.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing for unit tests, integration tests for API endpoints</standards>
+    <locations>Unit tests in *_test.go files, integration tests in tests/ directory</locations>
+    <ideas>- Test floating button appears on all pages
+- Test bot status checking
+- Test fallback to sales number
+- Test admin settings save correctly
+- Test lead tracking integration</ideas>
+  </tests>
+</story-context>

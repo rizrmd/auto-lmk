@@ -1,0 +1,114 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>Build Sales Management UI Template</title>
+    <status>drafted</status>
+    <generatedAt>Sat Nov 15 2025</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>/home/yopi/Projects/auto-lmk/docs/sprint-artifacts/1-2-build-sales-management-ui-template.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a tenant admin,</asA>
+    <iWant>I want a clean UI to manage sales team members,</iWant>
+    <soThat>so that I can easily add, view, and remove sales team members.</soThat>
+    <tasks>- [ ] Implement sales management page template
+  - [ ] Create templates/admin/sales.html
+  - [ ] Add navigation link in layout
+  - [ ] Implement table with HTMX for listing
+  - [ ] Add form modal for adding sales
+  - [ ] Add delete confirmation modal
+- [ ] Wire HTMX interactions
+  - [ ] POST /api/sales for create
+  - [ ] GET /api/sales for list
+  - [ ] DELETE /api/sales/{id} for delete
+  - [ ] Handle success/error responses
+- [ ] Add testing subtasks
+  - [ ] Test form validation
+  - [ ] Test CRUD operations
+  - [ ] Test responsive design</tasks>
+  </story>
+
+  <acceptanceCriteria>**Given** I am logged in as tenant admin
+**When** I navigate to `/admin/sales`
+**Then** I see a page with:
+- Page title: "Sales Team Management"
+- "Tambah Sales" button at top right
+- Table with columns: Name, Phone Number, Role, Created At, Actions (Delete icon)
+- Empty state if no sales members: "Belum ada sales team. Klik 'Tambah Sales' untuk menambahkan."
+
+**And** when I click "Tambah Sales" button
+**Then** a form appears (modal or inline) with fields:
+- Phone Number (required, with placeholder: "+628123456789")
+- Name (required, with placeholder: "John Doe")
+- Role (optional, with placeholder: "Sales Executive")
+- Submit button: "Simpan"
+- Cancel button: "Batal"
+
+**And** when I submit the form with valid data
+**Then** HTMX sends POST to `/api/sales`
+**And** on success, form closes and table updates with new entry (via HTMX swap)
+**And** success toast notification appears: "Sales member berhasil ditambahkan"
+
+**And** when I click delete icon on a row
+**Then** confirmation modal appears: "Hapus [Name] dari sales team?"
+**And** when I confirm, HTMX sends DELETE to `/api/sales/{id}`
+**And** on success, row is removed from table
+**And** success toast notification appears: "Sales member berhasil dihapus"
+
+**And** all error messages display inline near form fields
+**And** page is responsive (mobile-friendly with Tailwind breakpoints)
+
+**Prerequisites:** Story 1.1 (API endpoints must exist)</acceptanceCriteria>
+
+  <artifacts>
+    <docs>- path: docs/PRD-Admin-Tenant.md
+  title: Auto LMK - Product Requirements Document
+  section: Sales Team Management
+  snippet: Sales team management interface with CRUD operations for adding, viewing, and removing sales team members via admin UI.
+- path: docs/architecture.md
+  title: Architecture - Auto LMK Admin Tenant Management
+  section: Sales Team Management
+  snippet: Implementation patterns for sales team management including handler structure and template design.</docs>
+    <code>- path: internal/handler/sales_handler.go
+  kind: handler
+  symbol: Create, List, Delete
+  lines: various
+  reason: Existing CRUD operations for sales team management that the UI will integrate with.
+- path: internal/repository/sales_repository.go
+  kind: repository
+  symbol: Create, List, Delete, IsSales
+  lines: various
+  reason: Database operations for sales team data.
+- path: templates/admin/layout.html
+  kind: template
+  symbol: navigation
+  lines: various
+  reason: Existing admin layout that will be extended with sales navigation.
+- path: templates/admin/cars.html
+  kind: template
+  symbol: table, form patterns
+  lines: various
+  reason: Reference template for similar admin UI patterns.</code>
+    <dependencies>- ecosystem: go
+  packages: github.com/go-chi/chi/v5, database/sql, encoding/json, net/http
+- ecosystem: frontend
+  packages: htmx, tailwindcss, alpine.js</dependencies>
+  </artifacts>
+
+  <constraints>Follow existing admin UI patterns from car management page, use HTMX for dynamic interactions, Tailwind for styling. Tenant isolation enforced in all database operations using model.GetTenantID(r.Context()). Multi-tenant domain-based routing. Server-side validation primary, client-side optional. Mobile-first responsive design.</constraints>
+  <interfaces>- name: Sales Team Management API
+  kind: REST endpoints
+  signature: POST /api/sales, GET /api/sales, DELETE /api/sales/{id}
+  path: internal/handler/sales_handler.go
+- name: Tenant Isolation Middleware
+  kind: middleware
+  signature: func TenantExtractor(next http.Handler) http.Handler
+  path: internal/middleware/tenant.go</interfaces>
+  <tests>
+    <standards>Unit tests for validation logic established in sales_handler_test.go - follow patterns for handler testing. Manual testing for UI interactions, verify HTMX requests, check responsive design. Server-side validation with inline error display.</standards>
+    <locations>internal/handler/*_test.go, manual UI testing, responsive design testing</locations>
+    <ideas>Test form validation for phone number format (E.164 and Indonesia formats), test CRUD operations via HTMX, test responsive design on mobile devices, test tenant isolation, test error handling and notifications.</ideas>
+  </tests>
+</story-context>

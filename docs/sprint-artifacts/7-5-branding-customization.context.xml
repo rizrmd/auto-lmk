@@ -1,0 +1,96 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>5</storyId>
+    <title>branding-customization</title>
+    <status>backlog</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/7-5-branding-customization.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As an admin user</asA>
+    <iWant>to customize the website branding per tenant</iWant>
+    <soThat>each tenant can have their own look and feel</soThat>
+    <tasks>- Create tenant branding settings
+- Implement branding admin interface
+- Update frontend templates for dynamic branding
+- Test branding functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I am admin, when I access branding settings, then I can upload and change the showroom logo.
+
+2. Given I set branding, when I upload favicon/icon, then it appears in browser tabs and bookmarks.
+
+3. Given I customize text, when I set custom title, subtitle, and promotional text, then they appear on the homepage.
+
+4. Given branding is set, when visitors access the site, then they see the custom header styling and logo.
+
+5. Given I change branding, when I save settings, then changes apply immediately to the public site.
+
+6. Given multiple tenants exist, when each tenant sets branding, then branding is isolated per tenant.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>FR-7.5: Branding Customization - Tenant-specific logo, colors, and text</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>internal/handler/branding_handler.go</path>
+        <kind>handler</kind>
+        <symbol>BrandingHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Handler for branding settings management</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/branding_repository.go</path>
+        <kind>repository</kind>
+        <symbol>BrandingRepository</symbol>
+        <lines>1-80</lines>
+        <reason>Repository for tenant branding data</reason>
+      </artifact>
+      <artifact>
+        <path>templates/admin/settings/branding.html</path>
+        <kind>template</kind>
+        <symbol>branding settings</symbol>
+        <lines>1-100</lines>
+        <reason>Admin interface for branding customization</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/gorilla/mux" version="latest">HTTP router</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Tenant-specific branding isolation
+- File upload validation for logos
+- Dynamic template variable replacement
+- Favicon format support
+- Immediate branding changes</constraints>
+  <interfaces>
+    <interface>
+      <name>Branding Settings API</name>
+      <kind>HTTP GET/POST</kind>
+      <signature>GET/POST /api/admin/branding</signature>
+      <path>internal/handler/branding_handler.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing for unit tests, integration tests for API endpoints</standards>
+    <locations>Unit tests in *_test.go files, integration tests in tests/ directory</locations>
+    <ideas>- Test branding settings save/retrieve
+- Test file upload validation
+- Test tenant isolation
+- Test frontend branding display</ideas>
+  </tests>
+</story-context>

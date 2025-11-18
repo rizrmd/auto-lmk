@@ -1,0 +1,187 @@
+{{define "input"}}
+{{/*
+  Input Component
+  Usage: {{template "input" (dict "name" "email" "type" "email" "placeholder" "Email Anda" "label" "Email" "required" true)}}
+  Parameters:
+    - name: Input name attribute (required)
+    - type: Input type (default: "text")
+    - placeholder: Placeholder text (optional)
+    - label: Label text (optional)
+    - value: Input value (optional)
+    - required: Mark as required (optional)
+    - disabled: Disabled state (optional)
+    - error: Error message (optional)
+    - class: Additional CSS classes (optional)
+*/}}
+{{$type := .type | default "text"}}
+{{$class := .class | default ""}}
+
+<div class="{{if .error}}mb-1{{else}}mb-4{{end}}">
+  {{if .label}}
+  <label for="{{.name}}" class="block text-sm font-medium text-gray-700 mb-2">
+    {{.label}}
+    {{if .required}}<span class="text-red-600">*</span>{{end}}
+  </label>
+  {{end}}
+
+  {{if eq $type "textarea"}}
+  <textarea
+    id="{{.name}}"
+    name="{{.name}}"
+    rows="{{.rows | default 4}}"
+    placeholder="{{.placeholder}}"
+    {{if .required}}required{{end}}
+    {{if .disabled}}disabled{{end}}
+    class="input-field {{if .error}}border-red-500 focus:ring-red-500{{end}} {{$class}}"
+  >{{.value}}</textarea>
+  {{else if eq $type "select"}}
+  <select
+    id="{{.name}}"
+    name="{{.name}}"
+    {{if .required}}required{{end}}
+    {{if .disabled}}disabled{{end}}
+    class="input-field {{if .error}}border-red-500 focus:ring-red-500{{end}} {{$class}}"
+  >
+    {{if .placeholder}}
+    <option value="">{{.placeholder}}</option>
+    {{end}}
+    {{range .options}}
+    <option value="{{.value}}" {{if .selected}}selected{{end}}>{{.label}}</option>
+    {{end}}
+  </select>
+  {{else}}
+  <input
+    type="{{$type}}"
+    id="{{.name}}"
+    name="{{.name}}"
+    value="{{.value}}"
+    placeholder="{{.placeholder}}"
+    {{if .required}}required{{end}}
+    {{if .disabled}}disabled{{end}}
+    {{if .min}}min="{{.min}}"{{end}}
+    {{if .max}}max="{{.max}}"{{end}}
+    {{if .step}}step="{{.step}}"{{end}}
+    {{if .pattern}}pattern="{{.pattern}}"{{end}}
+    class="input-field {{if .error}}border-red-500 focus:ring-red-500{{end}} {{$class}}"
+  >
+  {{end}}
+
+  {{if .error}}
+  <p class="mt-1 text-sm text-red-600">{{.error}}</p>
+  {{end}}
+
+  {{if .hint}}
+  <p class="mt-1 text-sm text-gray-500">{{.hint}}</p>
+  {{end}}
+</div>
+{{end}}
+
+{{define "checkbox"}}
+{{/*
+  Checkbox Component
+  Usage: {{template "checkbox" (dict "name" "agree" "label" "I agree to terms" "checked" true)}}
+*/}}
+<div class="flex items-start mb-4">
+  <div class="flex items-center h-5">
+    <input
+      type="checkbox"
+      id="{{.name}}"
+      name="{{.name}}"
+      value="{{.value | default "1"}}"
+      {{if .checked}}checked{{end}}
+      {{if .required}}required{{end}}
+      {{if .disabled}}disabled{{end}}
+      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+    >
+  </div>
+  {{if .label}}
+  <div class="ml-3 text-sm">
+    <label for="{{.name}}" class="text-gray-700">
+      {{.label}}
+      {{if .required}}<span class="text-red-600">*</span>{{end}}
+    </label>
+    {{if .hint}}
+    <p class="text-gray-500">{{.hint}}</p>
+    {{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+{{define "radio"}}
+{{/*
+  Radio Button Component
+  Usage: {{template "radio" (dict "name" "plan" "options" $options)}}
+  Options format: [{"value": "basic", "label": "Basic Plan", "checked": true}]
+*/}}
+<div class="space-y-2">
+  {{if .label}}
+  <label class="block text-sm font-medium text-gray-700 mb-2">
+    {{.label}}
+    {{if .required}}<span class="text-red-600">*</span>{{end}}
+  </label>
+  {{end}}
+
+  {{range .options}}
+  <div class="flex items-center">
+    <input
+      type="radio"
+      id="{{$.name}}-{{.value}}"
+      name="{{$.name}}"
+      value="{{.value}}"
+      {{if .checked}}checked{{end}}
+      {{if $.required}}required{{end}}
+      {{if $.disabled}}disabled{{end}}
+      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+    >
+    <label for="{{$.name}}-{{.value}}" class="ml-2 text-sm text-gray-700">
+      {{.label}}
+    </label>
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+{{define "file-upload"}}
+{{/*
+  File Upload Component
+  Usage: {{template "file-upload" (dict "name" "photo" "label" "Upload Photo" "accept" "image/*")}}
+*/}}
+<div class="mb-4">
+  {{if .label}}
+  <label for="{{.name}}" class="block text-sm font-medium text-gray-700 mb-2">
+    {{.label}}
+    {{if .required}}<span class="text-red-600">*</span>{{end}}
+  </label>
+  {{end}}
+
+  <div class="flex items-center justify-center w-full">
+    <label for="{{.name}}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+      <div class="flex flex-col items-center justify-center pt-5 pb-6">
+        <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        <p class="mb-2 text-sm text-gray-500">
+          <span class="font-semibold">Click to upload</span> or drag and drop
+        </p>
+        {{if .hint}}
+        <p class="text-xs text-gray-500">{{.hint}}</p>
+        {{end}}
+      </div>
+      <input
+        type="file"
+        id="{{.name}}"
+        name="{{.name}}"
+        {{if .accept}}accept="{{.accept}}"{{end}}
+        {{if .multiple}}multiple{{end}}
+        {{if .required}}required{{end}}
+        class="hidden"
+      >
+    </label>
+  </div>
+
+  {{if .error}}
+  <p class="mt-1 text-sm text-red-600">{{.error}}</p>
+  {{end}}
+</div>
+{{end}}

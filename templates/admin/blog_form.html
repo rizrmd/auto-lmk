@@ -1,0 +1,281 @@
+{{define "content"}}
+<div class="mb-4 md:mb-6">
+    <div class="flex items-center space-x-4">
+        <a href="/admin/blog" class="text-gray-600 hover:text-gray-900">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+        </a>
+        <div class="flex-1">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-900">
+                {{if .IsEdit}}Edit Post Blog{{else}}Buat Post Blog Baru{{end}}
+            </h1>
+            <p class="text-gray-600 mt-1">{{if .IsEdit}}Perbarui informasi post blog{{else}}Buat artikel blog baru untuk website Anda{{end}}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Form -->
+<div class="bg-white rounded-lg shadow p-6" x-data="blogFormData()">
+    <form @submit.prevent="submitForm" id="blog-form">
+        <!-- Title -->
+        <div class="mb-6">
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                Judul <span class="text-red-600">*</span>
+            </label>
+            <input type="text"
+                   id="title"
+                   name="title"
+                   x-model="form.title"
+                   @input="generateSlug"
+                   required
+                   maxlength="200"
+                   placeholder="Masukkan judul post blog"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- Slug -->
+        <div class="mb-6">
+            <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">
+                Slug (URL)
+            </label>
+            <input type="text"
+                   id="slug"
+                   name="slug"
+                   x-model="form.slug"
+                   pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                   placeholder="otomatis-dari-judul"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <p class="text-sm text-gray-500 mt-1">Biarkan kosong untuk generate otomatis dari judul</p>
+        </div>
+
+        <!-- Excerpt -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <label for="excerpt" class="block text-sm font-medium text-gray-700">
+                    Ringkasan
+                </label>
+                <button type="button"
+                        @click="generateAIContent('excerpt')"
+                        :disabled="isGenerating || !form.title"
+                        class="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span x-text="isGenerating ? 'Generating...' : 'Generate dengan AI'"></span>
+                </button>
+            </div>
+            <textarea id="excerpt"
+                      name="excerpt"
+                      x-model="form.excerpt"
+                      rows="3"
+                      maxlength="500"
+                      placeholder="Ringkasan singkat untuk preview"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+            <p class="text-sm text-gray-500 mt-1">Maksimal 500 karakter</p>
+        </div>
+
+        <!-- Content -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <label for="content" class="block text-sm font-medium text-gray-700">
+                    Konten <span class="text-red-600">*</span>
+                </label>
+                <button type="button"
+                        @click="generateAIContent('full_post')"
+                        :disabled="isGenerating || !form.title"
+                        class="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span x-text="isGenerating ? 'Generating...' : 'Generate dengan AI'"></span>
+                </button>
+            </div>
+            <textarea id="content"
+                      name="content"
+                      x-model="form.content"
+                      required
+                      rows="15"
+                      placeholder="Tulis konten blog Anda di sini..."
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"></textarea>
+            <p class="text-sm text-gray-500 mt-1">Mendukung Markdown untuk formatting</p>
+        </div>
+
+        <!-- Status -->
+        <div class="mb-6">
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                Status <span class="text-red-600">*</span>
+            </label>
+            <select id="status"
+                    name="status"
+                    x-model="form.status"
+                    required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+            </select>
+        </div>
+
+        <!-- Error Message -->
+        <div x-show="errorMessage" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <p x-text="errorMessage"></p>
+        </div>
+
+        <!-- Success Message -->
+        <div x-show="successMessage" class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <p x-text="successMessage"></p>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end space-x-4">
+            <a href="/admin/blog" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                Batal
+            </a>
+            <button type="submit"
+                    :disabled="isSubmitting"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                <span x-text="isSubmitting ? 'Menyimpan...' : ({{if .IsEdit}}'Perbarui Post'{{else}}'Simpan Post'{{end}})"></span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function blogFormData() {
+        return {
+            form: {
+                title: '',
+                slug: '',
+                content: '',
+                excerpt: '',
+                status: 'draft'
+            },
+            isSubmitting: false,
+            isGenerating: false,
+            errorMessage: '',
+            successMessage: '',
+
+            init() {
+                {{if .IsEdit}}
+                    this.loadPostData({{.BlogID}});
+                {{end}}
+            },
+
+            loadPostData(id) {
+                fetch(`/api/admin/blog/${id}`, {
+                    headers: {
+                        'X-Tenant-ID': document.querySelector('meta[name="tenant-id"]')?.content || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    this.form = {
+                        title: data.title || '',
+                        slug: data.slug || '',
+                        content: data.content || '',
+                        excerpt: data.excerpt || '',
+                        status: data.status || 'draft'
+                    };
+                })
+                .catch(error => {
+                    console.error('Error loading post:', error);
+                    this.errorMessage = 'Gagal memuat data post';
+                });
+            },
+
+            generateSlug() {
+                if (!this.form.slug || this.form.slug === '') {
+                    this.form.slug = this.form.title
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+                }
+            },
+
+            async generateAIContent(type) {
+                if (!this.form.title) {
+                    alert('Harap isi judul terlebih dahulu');
+                    return;
+                }
+
+                this.isGenerating = true;
+                this.errorMessage = '';
+
+                try {
+                    const response = await fetch('/api/admin/blog/generate-ai', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': document.querySelector('meta[name="tenant-id"]')?.content || ''
+                        },
+                        body: JSON.stringify({
+                            topic: this.form.title,
+                            type: type,
+                            length: type === 'excerpt' ? 'short' : 'long'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Gagal generate konten');
+                    }
+
+                    const data = await response.json();
+
+                    if (type === 'excerpt') {
+                        this.form.excerpt = data.content;
+                    } else {
+                        this.form.content = data.content;
+                    }
+                } catch (error) {
+                    console.error('Error generating content:', error);
+                    this.errorMessage = 'Gagal generate konten dengan AI: ' + error.message;
+                } finally {
+                    this.isGenerating = false;
+                }
+            },
+
+            async submitForm() {
+                this.isSubmitting = true;
+                this.errorMessage = '';
+                this.successMessage = '';
+
+                try {
+                    const url = {{if .IsEdit}}
+                        `/api/admin/blog/{{.BlogID}}`
+                    {{else}}
+                        '/api/admin/blog'
+                    {{end}};
+
+                    const method = {{if .IsEdit}}'PUT'{{else}}'POST'{{end}};
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': document.querySelector('meta[name="tenant-id"]')?.content || ''
+                        },
+                        body: JSON.stringify(this.form)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Gagal menyimpan post');
+                    }
+
+                    this.successMessage = 'Post berhasil disimpan!';
+                    setTimeout(() => {
+                        window.location.href = '/admin/blog';
+                    }, 1500);
+                } catch (error) {
+                    console.error('Error saving post:', error);
+                    this.errorMessage = error.message;
+                } finally {
+                    this.isSubmitting = false;
+                }
+            }
+        };
+    }
+</script>
+{{end}}

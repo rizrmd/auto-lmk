@@ -1,0 +1,105 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>2</storyId>
+    <title>search-analytics-system</title>
+    <status>backlog</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/7-2-search-analytics-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a tenant admin</asA>
+    <iWant>a search analytics system to track and analyze customer search behavior</iWant>
+    <soThat>I can understand what cars customers are looking for and optimize the catalog</soThat>
+    <tasks>- Implement search event tracking on homepage
+- Create analytics dashboard for search data
+- Add filters and date ranges
+- Generate reports on popular searches
+- Test end-to-end functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I am on the public homepage, when I perform a search, then the search event is logged with timestamp, search terms, filters used, and results count.
+
+2. Given I am a tenant admin, when I navigate to /admin/analytics, then I see a dashboard with search analytics including top search terms, popular filters, search trends over time, and conversion rates.
+
+3. Given I am on the analytics dashboard, when I select date ranges, then the data updates to show analytics for that period.
+
+4. Given I am on the analytics dashboard, when I view search trends, then I see charts showing daily/weekly search volume and popular car types.
+
+5. Given the analytics system is implemented, when customers search, then the system handles high traffic without performance issues.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>FR-7.2: Search Analytics System - Track and analyze customer search behavior</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>templates/pages/home.html</path>
+        <kind>template</kind>
+        <symbol>search form</symbol>
+        <lines>1-50</lines>
+        <reason>Homepage template with search form to track events</reason>
+      </artifact>
+      <artifact>
+        <path>internal/handler/analytics_handler.go</path>
+        <kind>handler</kind>
+        <symbol>AnalyticsHandler</symbol>
+        <lines>1-100</lines>
+        <reason>New handler for analytics dashboard and API</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/analytics_repository.go</path>
+        <kind>repository</kind>
+        <symbol>LogSearchEvent, GetSearchAnalytics</symbol>
+        <lines>1-150</lines>
+        <reason>Repository for storing and retrieving search analytics data</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/gorilla/mux" version="latest">HTTP router</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+      <node>
+        <dependency name="chart.js" version="latest">For analytics charts</dependency>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Use existing database schema or add search_events table
+- Implement client-side tracking with JavaScript
+- Ensure tenant isolation for analytics data
+- Optimize for performance with large datasets
+- Use HTMX for dynamic dashboard updates</constraints>
+  <interfaces>
+    <interface>
+      <name>Log Search Event API</name>
+      <kind>HTTP POST</kind>
+      <signature>POST /api/analytics/search</signature>
+      <path>internal/handler/analytics_handler.go</path>
+    </interface>
+    <interface>
+      <name>Analytics Dashboard API</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /api/analytics/search?start_date=&end_date=</signature>
+      <path>internal/handler/analytics_handler.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing for unit tests, integration tests for API endpoints</standards>
+    <locations>Unit tests in *_test.go files, integration tests in tests/ directory</locations>
+    <ideas>- Test search event logging
+- Test analytics data retrieval
+- Test date range filtering
+- Test performance with large datasets
+- Test tenant isolation</ideas>
+  </tests>
+</story-context>

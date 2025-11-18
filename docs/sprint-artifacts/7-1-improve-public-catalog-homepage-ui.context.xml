@@ -1,0 +1,133 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>1</storyId>
+    <title>improve-public-catalog-homepage-ui</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/7-1-improve-public-catalog-homepage-ui.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a website visitor</asA>
+    <iWant>an improved homepage UI for the car catalog</iWant>
+    <soThat>I can easily browse available cars with better visual appeal and navigation</soThat>
+    <tasks>- [ ] Update homepage template (templates/pages/home.html) with hero section, search bar, and filters
+  - [ ] Create car grid component with responsive layout
+  - [ ] Implement backend search/filter API endpoint
+  - [ ] Optimize performance and SEO
+  - [ ] Test end-to-end functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I visit the public homepage (/), when the page loads, then I see a hero section with search bar (brand, price range, transmission), featured cars grid (3-6 cars with photos, price, basic specs), quick filters ("All Cars", "Under 200M", "Automatic", "Manual"), and call-to-action buttons ("Browse All Cars", "Contact Sales").
+
+2. Given I am on the homepage, when I type in the search bar, then HTMX filters results without page reload, and select filters updates car grid dynamically, and no results shows "No cars found" with suggestion to adjust filters.
+
+3. Given I am on the homepage, when I view each car card, then it displays primary photo (thumbnail), brand + model + year, price (formatted: "Rp 185.000.000"), key specs (transmission, fuel type), and "View Details" button links to /cars/{id}.
+
+4. Given I am on the homepage, when the page loads, then it loads in < 2 seconds, is SEO-friendly with proper meta tags, and consistent with existing Tailwind styling.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>Improve frontend user experience for car catalog browsing. Modern UI with search, filters, and responsive design. Attract more customers through better website presentation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Frontend Architecture</section>
+        <snippet>Public website uses Go templates with Tailwind CSS and HTMX for dynamic interactions. Follows existing admin panel patterns for consistency.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/index.md</path>
+        <title>Project Documentation</title>
+        <section>Public Website</section>
+        <snippet>Catalog website for car browsing with admin panel for management. Uses Go backend with HTML templates and HTMX.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>templates/pages/home.html</path>
+        <kind>template</kind>
+        <symbol>homepage</symbol>
+        <lines>1-50</lines>
+        <reason>Existing homepage template to be enhanced with hero section and car grid</reason>
+      </artifact>
+      <artifact>
+        <path>internal/handler/page_handler.go</path>
+        <kind>handler</kind>
+        <symbol>HomePage</symbol>
+        <lines>1-30</lines>
+        <reason>Homepage handler that serves car data to template</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/car_repository.go</path>
+        <kind>repository</kind>
+        <symbol>ListCars, SearchCars</symbol>
+        <lines>1-100</lines>
+        <reason>Car data access methods for homepage display and search functionality</reason>
+      </artifact>
+      <artifact>
+        <path>templates/admin/layout.html</path>
+        <kind>template</kind>
+        <symbol>layout</symbol>
+        <lines>1-100</lines>
+        <reason>Reference for Tailwind CSS classes and HTMX patterns used in admin panel</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/gorilla/mux" version="latest">HTTP router for Go</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+      <node>
+        <dependency name="tailwindcss" version="^3.0">CSS framework for styling</dependency>
+        <dependency name="htmx.org" version="latest">For dynamic interactions</dependency>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Use Tailwind CSS classes consistent with admin panel
+- Implement HTMX for search and filtering without page reloads
+- Follow existing Go handler patterns in internal/handler/
+- Ensure responsive design for mobile devices
+- Load car images from static/uploads/cars/ directory
+- Format prices in Indonesian Rupiah (Rp XXX.XXX.XXX)
+- SEO optimization with proper meta tags and semantic HTML</constraints>
+
+  <interfaces>
+    <interface>
+      <name>Homepage Handler</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /</signature>
+      <path>internal/handler/page_handler.go</path>
+    </interface>
+    <interface>
+      <name>Car Search API</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /api/cars/search?brand=&amp;price_min=&amp;price_max=&amp;transmission=</signature>
+      <path>internal/handler/car_handler.go (new endpoint)</path>
+    </interface>
+    <interface>
+      <name>Car Repository</name>
+      <kind>Go interface</kind>
+      <signature>SearchCars(ctx context.Context, filters CarFilters) ([]Car, error)</signature>
+      <path>internal/repository/car_repository.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing framework for unit tests. Integration tests for HTMX interactions. Follow existing test patterns in project.</standards>
+    <locations>Unit tests in *_test.go files alongside source. Integration tests in tests/ directory.</locations>
+    <ideas>- Test homepage loads with car data
+- Test search API returns filtered results
+- Test HTMX search updates car grid without page reload
+- Test responsive design on mobile devices
+- Test SEO meta tags are present
+- Test car card displays correct information</ideas>
+  </tests>
+</story-context>

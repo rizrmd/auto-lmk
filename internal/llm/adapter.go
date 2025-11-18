@@ -69,31 +69,10 @@ func (a *CarRepoAdapter) GetCarWithDetails(ctx context.Context, carID int) (inte
 	return a.car.GetByID(ctx, carID)
 }
 
-// LeadRepoAdapter adapts repository.LeadRepository to bot's interface
-type LeadRepoAdapter struct {
-	repo *repository.LeadRepository
+func (a *CarRepoAdapter) GetCarPhotos(ctx context.Context, carID int) (interface{}, error) {
+	return a.car.GetCarPhotos(ctx, carID)
 }
 
-func NewLeadRepoAdapter(repo *repository.LeadRepository) *LeadRepoAdapter {
-	return &LeadRepoAdapter{repo: repo}
-}
-
-func (a *LeadRepoAdapter) Create(ctx context.Context, phoneNumber, name string, interestedCarID *int) (int, error) {
-	var namePtr *string
-	if name != "" {
-		namePtr = &name
-	}
-
-	req := &model.CreateLeadRequest{
-		PhoneNumber:     phoneNumber,
-		Name:            namePtr,
-		InterestedCarID: interestedCarID,
-	}
-
-	lead, err := a.repo.Create(ctx, req)
-	if err != nil {
-		return 0, err
-	}
-
-	return lead.ID, nil
+func (a *CarRepoAdapter) CreateWithPhotos(ctx context.Context, car *model.Car, photoURLs []string) (int, error) {
+	return a.car.CreateWithPhotos(ctx, car, photoURLs)
 }

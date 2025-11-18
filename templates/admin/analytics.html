@@ -1,0 +1,172 @@
+{{define "content"}}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p class="text-gray-600 mt-2">Monitor search behavior and car popularity</p>
+        </div>
+        <div>
+            <a href="/api/admin/analytics/export" class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Date Range</h2>
+        <div class="flex gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                <input type="date" id="start-date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">End Date</label>
+                <input type="date" id="end-date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="flex items-end">
+                <button id="update-filters" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    Update
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Top Search Keywords -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Top Search Keywords</h2>
+            <div id="keywords-chart" class="space-y-3">
+                <!-- Keywords will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Top Viewed Cars -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Most Viewed Cars</h2>
+            <div id="cars-chart" class="space-y-3">
+                <!-- Cars will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Trends Chart -->
+    <div class="bg-white rounded-lg shadow p-6 mt-8">
+        <h2 class="text-xl font-semibold mb-4">Search Trends (Last 30 Days)</h2>
+        <div id="trends-chart" class="h-64">
+            <!-- Chart will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Load analytics data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAnalytics();
+
+    // Set default date range (last 30 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+
+    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+
+    // Update filters event
+    document.getElementById('update-filters').addEventListener('click', loadAnalytics);
+});
+
+async function loadAnalytics() {
+    try {
+        // Load keywords
+        const keywordsResponse = await fetch('/api/admin/analytics/search-keywords');
+        const keywordsData = await keywordsResponse.json();
+
+        // Load cars
+        const carsResponse = await fetch('/api/admin/analytics/car-views');
+        const carsData = await carsResponse.json();
+
+        // Load trends
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        const trendsResponse = await fetch(`/api/admin/analytics/trends?start_date=${startDate}&end_date=${endDate}`);
+        const trendsData = await trendsResponse.json();
+
+        renderKeywords(keywordsData.keywords);
+        renderCars(carsData.cars);
+        renderTrends(trendsData.trends);
+    } catch (error) {
+        console.error('Failed to load analytics:', error);
+    }
+}
+
+function renderKeywords(keywords) {
+    const container = document.getElementById('keywords-chart');
+    if (!keywords || keywords.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No search data available</p>';
+        return;
+    }
+
+    container.innerHTML = keywords.map(keyword => `
+        <div class="flex justify-between items-center">
+            <span class="text-gray-900">${keyword.keyword}</span>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500">${keyword.search_count} searches</span>
+                <div class="w-20 bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(keyword.search_count * 10, 100)}%"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCars(cars) {
+    const container = document.getElementById('cars-chart');
+    if (!cars || cars.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No car view data available</p>';
+        return;
+    }
+
+    container.innerHTML = cars.map(car => `
+        <div class="flex justify-between items-center">
+            <div>
+                <span class="text-gray-900 font-medium">${car.brand} ${car.model} (${car.year})</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500">${car.view_count} views</span>
+                <div class="w-20 bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-500 h-2 rounded-full" style="width: ${Math.min(car.view_count * 5, 100)}%"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderTrends(trends) {
+    const container = document.getElementById('trends-chart');
+    if (!trends || trends.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No trend data available</p>';
+        return;
+    }
+
+    // Simple bar chart
+    const maxCount = Math.max(...trends.map(t => t.search_count));
+    container.innerHTML = trends.map(trend => {
+        const date = new Date(trend.date).toLocaleDateString();
+        const percentage = maxCount > 0 ? (trend.search_count / maxCount) * 100 : 0;
+        return `
+            <div class="flex items-center space-x-2 mb-2">
+                <span class="text-sm text-gray-600 w-20">${date}</span>
+                <div class="flex-1 bg-gray-200 rounded h-4">
+                    <div class="bg-blue-500 h-4 rounded" style="width: ${percentage}%"></div>
+                </div>
+                <span class="text-sm text-gray-600 w-12">${trend.search_count}</span>
+            </div>
+        `;
+    }).join('');
+}
+</script>
+{{end}}

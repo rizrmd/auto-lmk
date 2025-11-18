@@ -21,9 +21,18 @@ func TenantExtractor(db *sql.DB) func(http.Handler) http.Handler {
 				host = host[:colonIdx]
 			}
 
-			// Special handling for root admin domain
-			if host == "admin.localhost" || host == "admin.platform.com" {
-				// Root admin - no tenant_id required
+			// Special handling for root admin domain and localhost (development)
+			if host == "admin.localhost" || host == "admin.platform.com" || host == "localhost" {
+				// Root admin or development - try to get default tenant
+				var tenantID int
+				err := db.QueryRow("SELECT id FROM tenants WHERE status = 'active' ORDER BY id LIMIT 1").Scan(&tenantID)
+				if err == nil {
+					// Found a tenant, add to context
+					ctx := model.WithTenantID(r.Context(), tenantID)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+				// No tenant found, continue without tenant context
 				next.ServeHTTP(w, r)
 				return
 			}

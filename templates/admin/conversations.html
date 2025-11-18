@@ -1,0 +1,269 @@
+{{define "content"}}
+<div class="mb-4 md:mb-6">
+    <div class="flex-1 min-w-0">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Conversations</h1>
+        <p class="hidden md:block text-gray-600 mt-1">Monitor percakapan customer dan sales</p>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="bg-white rounded-lg shadow p-4 mb-6" x-data="{ activeFilter: 'all' }">
+    <!-- Filter Buttons -->
+    <div class="flex flex-wrap gap-2 mb-4">
+        <button @click="activeFilter = 'all'"
+                :class="activeFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                hx-get="/admin/conversations/table?type=all"
+                hx-target="#conversations-table"
+                hx-swap="outerHTML"
+                class="px-4 py-2 rounded-lg font-medium transition-colors">
+            Semua
+        </button>
+        <button @click="activeFilter = 'customer'"
+                :class="activeFilter === 'customer' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                hx-get="/admin/conversations/table?type=customer"
+                hx-target="#conversations-table"
+                hx-swap="outerHTML"
+                class="px-4 py-2 rounded-lg font-medium transition-colors">
+            Customer
+        </button>
+        <button @click="activeFilter = 'sales'"
+                :class="activeFilter === 'sales' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                hx-get="/admin/conversations/table?type=sales"
+                hx-target="#conversations-table"
+                hx-swap="outerHTML"
+                class="px-4 py-2 rounded-lg font-medium transition-colors">
+            Sales
+        </button>
+    </div>
+
+    <!-- Search Box -->
+    <div class="relative">
+        <input type="text"
+               placeholder="Cari nomor telepon..."
+               hx-get="/admin/conversations/table"
+               hx-trigger="keyup changed delay:500ms"
+               hx-target="#conversations-table"
+               hx-swap="outerHTML"
+               hx-include="this"
+               name="search"
+               class="w-full md:w-96 px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </div>
+</div>
+
+<!-- Conversations Table -->
+{{template "conversations_table" .}}
+
+<script>
+// Relative time helper
+function getRelativeTime(dateStr) {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Baru saja';
+    if (diffMins < 60) return diffMins + ' menit lalu';
+    if (diffHours < 24) return diffHours + ' jam lalu';
+    if (diffDays === 1) return 'Kemarin';
+    if (diffDays < 7) return diffDays + ' hari lalu';
+
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Format phone number
+function formatPhone(phone) {
+    // Format: +62 812-3456-7890
+    if (phone.startsWith('+62')) {
+        const number = phone.substring(3);
+        return '+62 ' + number.substring(0, 3) + '-' + number.substring(3, 7) + '-' + number.substring(7);
+    }
+    if (phone.startsWith('08')) {
+        return '0' + phone.substring(1, 3) + '-' + phone.substring(3, 7) + '-' + phone.substring(7);
+    }
+    return phone;
+}
+
+// Truncate text
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+</script>
+{{end}}
+
+{{define "conversations_table"}}
+<div id="conversations-table">
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    {{if .Conversations}}
+    <!-- Desktop Table View (hidden on mobile) -->
+    <table class="hidden md:table min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nomor Telepon
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipe
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pesan Terakhir
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Waktu
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Jumlah
+                </th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Aksi
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .Conversations}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{.PhoneNumber}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {{if .IsSales}}
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Sales
+                    </span>
+                    {{else}}
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Customer
+                    </span>
+                    {{end}}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900 truncate max-w-xs">
+                        {{if .LastMessage}}{{.LastMessage}}{{else}}-{{end}}
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">
+                        <span x-data x-text="getRelativeTime('{{.LastMessageAt.Format "2006-01-02T15:04:05Z07:00"}}')"></span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                        {{.MessageCount}} pesan
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="/admin/conversations/{{.ID}}"
+                       class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        View
+                    </a>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+
+    <!-- Mobile Card View (hidden on desktop) -->
+    <div class="md:hidden divide-y divide-gray-200">
+        {{range .Conversations}}
+        <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-semibold text-gray-900">{{.PhoneNumber}}</h3>
+                    <div class="mt-1">
+                        {{if .IsSales}}
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            Sales
+                        </span>
+                        {{else}}
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                            Customer
+                        </span>
+                        {{end}}
+                        <span class="ml-2 inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                            {{.MessageCount}} pesan
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <p class="text-sm text-gray-600 truncate">
+                    {{if .LastMessage}}{{.LastMessage}}{{else}}-{{end}}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">
+                    <span x-data x-text="getRelativeTime('{{.LastMessageAt.Format "2006-01-02T15:04:05Z07:00"}}')"></span>
+                </p>
+            </div>
+            <div class="flex justify-end">
+                <a href="/admin/conversations/{{.ID}}"
+                   class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    View
+                </a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- Pagination -->
+    {{if gt .TotalPages 1}}
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Page {{.Page}} of {{.TotalPages}} ({{.Total}} total)
+            </div>
+            <div class="flex space-x-2">
+                {{if gt .Page 1}}
+                <button hx-get="/admin/conversations/table?page={{sub .Page 1}}&limit={{.Limit}}"
+                        hx-target="#conversations-table"
+                        hx-swap="outerHTML"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                </button>
+                {{else}}
+                <button disabled class="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
+                    Previous
+                </button>
+                {{end}}
+
+                {{if lt .Page .TotalPages}}
+                <button hx-get="/admin/conversations/table?page={{add .Page 1}}&limit={{.Limit}}"
+                        hx-target="#conversations-table"
+                        hx-swap="outerHTML"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                </button>
+                {{else}}
+                <button disabled class="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
+                    Next
+                </button>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    {{end}}
+
+    {{else}}
+    <!-- Empty State -->
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada conversation</h3>
+        <p class="mt-1 text-sm text-gray-500">Conversation akan muncul saat ada interaksi dengan customer</p>
+    </div>
+    {{end}}
+</div>
+</div>
+{{end}}

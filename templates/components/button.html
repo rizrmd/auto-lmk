@@ -1,0 +1,38 @@
+{{define "button"}}
+{{/*
+  Button Component
+  Usage: {{template "button" (dict "text" "Click Me" "variant" "primary" "href" "/path" "class" "extra-classes")}}
+  Variants: primary, secondary, ghost
+  Parameters:
+    - text: Button text (required)
+    - href: Link URL (optional, creates <a> tag instead of <button>)
+    - variant: Button style variant (default: "primary")
+    - class: Additional CSS classes (optional)
+    - icon: SVG icon HTML (optional)
+    - target: Link target attribute (optional, e.g., "_blank")
+*/}}
+{{$variant := .variant | default "primary"}}
+{{$class := .class | default ""}}
+{{$tag := "button"}}
+{{if .href}}{{$tag = "a"}}{{end}}
+
+{{if eq $tag "a"}}
+<a href="{{.href}}"
+   {{if .target}}target="{{.target}}"{{end}}
+   class="inline-flex items-center justify-center btn-{{$variant}} {{$class}}">
+  {{if .icon}}
+    <span class="mr-2">{{.icon}}</span>
+  {{end}}
+  {{.text}}
+</a>
+{{else}}
+<button type="{{.type | default "button"}}"
+        class="inline-flex items-center justify-center btn-{{$variant}} {{$class}}"
+        {{if .onclick}}onclick="{{.onclick}}"{{end}}>
+  {{if .icon}}
+    <span class="mr-2">{{.icon}}</span>
+  {{end}}
+  {{.text}}
+</button>
+{{end}}
+{{end}}

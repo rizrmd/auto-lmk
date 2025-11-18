@@ -1,3 +1,69 @@
+{{define "head"}}
+<!-- Basecoat UI -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/basecoat.cdn.min.css">
+<script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/js/all.min.js" defer></script>
+
+<!-- HTMX -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<!-- Alpine.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- Local Business Schema Markup -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "{{.TenantName}}",
+    {{if .ShowroomAddress}}"address": {
+        "@type": "PostalAddress",
+        "streetAddress": "{{.ShowroomAddress}}",
+        "addressLocality": "{{.TenantName}}",
+        "addressCountry": "ID"
+    },{{end}}
+    {{if .ShowroomPhone}}"telephone": "{{.ShowroomPhone}}",{{end}}
+    {{if .ShowroomEmail}}"email": "{{.ShowroomEmail}}",{{end}}
+    "telephone": "{{.WhatsAppNumber}}",
+    "url": "{{.BaseURL}}",
+    "image": "{{.LogoPath}}",
+    "description": "Dealer mobil bekas terpercaya dengan koleksi mobil berkualitas dan harga terbaik",
+    "priceRange": "$$",
+    "openingHours": [
+        "Mo-Sa 09:00-18:00",
+        "Su 10:00-16:00"
+    ],
+    "hasMap": {{if and .ShowroomLatitude .ShowroomLongitude}}"https://maps.google.com/?q={{.ShowroomLatitude}},{{.ShowroomLongitude}}"{{else}}"{{.BaseURL}}/kontak"{{end}},
+    {{if and .ShowroomLatitude .ShowroomLongitude}}"geo": {
+        "@type": "GeoCoordinates",
+        "latitude": {{.ShowroomLatitude}},
+        "longitude": {{.ShowroomLongitude}}
+    },{{end}}
+    "areaServed": {
+        "@type": "Country",
+        "name": "Indonesia"
+    },
+    "serviceType": [
+        "Penjualan Mobil Bekas",
+        "Konsultasi Otomotif",
+        "Test Drive",
+        "Bantuan Kredit",
+        "Tukar Tambah"
+    ],
+    "paymentAccepted": [
+        "Cash",
+        "Credit Card",
+        "Bank Transfer",
+        "Auto Loan"
+    ],
+    " currenciesAccepted": "IDR",
+    "sameAs": [
+        {{if .SocialMediaFacebook}}"https://facebook.com/{{.SocialMediaFacebook}}"{{end}},
+        {{if .SocialMediaInstagram}}"https://instagram.com/{{.SocialMediaInstagram}}"{{end}}
+    ]
+}
+</script>
+{{end}}
+
 {{define "content"}}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="text-center mb-12">
@@ -29,7 +95,7 @@
                 </div>
 
                 <!-- Address -->
-                {{if .TenantAddress}}
+                {{if .ShowroomAddress}}
                 <div class="flex items-start space-x-4 mb-6">
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +105,50 @@
                     </div>
                     <div>
                         <h3 class="font-semibold text-gray-900">Alamat</h3>
-                        <p class="text-gray-600">{{.TenantAddress}}</p>
+                        <p class="text-gray-600">{{.ShowroomAddress}}</p>
+                        {{if and .ShowroomLatitude .ShowroomLongitude}}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{.ShowroomLatitude}},{{.ShowroomLongitude}}"
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-700 text-sm font-medium mt-1 inline-block">
+                            Dapatkan Petunjuk Arah →
+                        </a>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+
+                <!-- Phone -->
+                {{if .ShowroomPhone}}
+                <div class="flex items-start space-x-4 mb-6">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Telepon</h3>
+                        <p class="text-gray-600">{{.ShowroomPhone}}</p>
+                        <a href="tel:{{.ShowroomPhone}}" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                            Hubungi Sekarang →
+                        </a>
+                    </div>
+                </div>
+                {{end}}
+
+                <!-- Email -->
+                {{if .ShowroomEmail}}
+                <div class="flex items-start space-x-4 mb-6">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Email</h3>
+                        <p class="text-gray-600">{{.ShowroomEmail}}</p>
+                        <a href="mailto:{{.ShowroomEmail}}" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                            Kirim Email →
+                        </a>
                     </div>
                 </div>
                 {{end}}
@@ -53,8 +162,12 @@
                     </div>
                     <div>
                         <h3 class="font-semibold text-gray-900">Jam Operasional</h3>
+                        {{if .ShowroomBusinessHours}}
+                        <div class="text-gray-600 whitespace-pre-line">{{.ShowroomBusinessHours}}</div>
+                        {{else}}
                         <p class="text-gray-600">Senin - Sabtu: 09:00 - 18:00</p>
                         <p class="text-gray-600">Minggu: 10:00 - 16:00</p>
+                        {{end}}
                         <p class="text-sm text-green-600 mt-1">WhatsApp Bot: 24/7</p>
                     </div>
                 </div>
@@ -142,6 +255,26 @@
 
         <!-- Map / Visual -->
         <div>
+            {{if and .ShowroomLatitude .ShowroomLongitude}}
+            <!-- Interactive Map with Leaflet.js -->
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <div id="showroom-map" class="rounded-lg h-96 mb-6 border border-gray-300"></div>
+            {{else if .ShowroomMapEmbed}}
+            <!-- Google Maps Embed -->
+            <div class="rounded-lg h-96 mb-6 border border-gray-300">
+                <iframe
+                    src="{{.ShowroomMapEmbed}}"
+                    width="100%"
+                    height="100%"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    class="rounded-lg">
+                </iframe>
+            </div>
+            {{else}}
+            <!-- Placeholder -->
             <div class="bg-gray-200 rounded-lg h-64 mb-6 flex items-center justify-center">
                 <div class="text-center text-gray-500">
                     <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,9 +282,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     <p>Peta Lokasi</p>
-                    <p class="text-sm">(Dapat diintegrasikan dengan Google Maps)</p>
+                    <p class="text-sm">(Peta akan ditampilkan setelah admin mengatur lokasi)</p>
                 </div>
             </div>
+            {{end}}
 
             <!-- FAQ -->
             <div class="bg-white rounded-lg shadow-md p-6">
@@ -256,4 +390,48 @@
         </a>
     </div>
 </div>
+
+{{if and .ShowroomLatitude .ShowroomLongitude}}
+<!-- Initialize Leaflet.js Map -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lat = {{.ShowroomLatitude}};
+    const lng = {{.ShowroomLongitude}};
+    const address = "{{.ShowroomAddress}}";
+
+    // Initialize map
+    const map = L.map('showroom-map').setView([lat, lng], 15);
+
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Add marker for showroom location
+    const marker = L.marker([lat, lng]).addTo(map);
+
+    // Add popup with address
+    if (address) {
+        marker.bindPopup(`
+            <div style="font-family: sans-serif;">
+                <strong style="color: #1e40af;">Lokasi Showroom</strong><br>
+                <p style="margin: 8px 0; color: #4b5563;">${address}</p>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}"
+                   target="_blank"
+                   style="color: #2563eb; text-decoration: none; font-weight: 500;">
+                    Dapatkan Petunjuk Arah →
+                </a>
+            </div>
+        `).openPopup();
+    }
+
+    // Fix map rendering issue
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+});
+</script>
+{{end}}
 {{end}}

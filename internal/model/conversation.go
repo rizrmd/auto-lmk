@@ -20,6 +20,17 @@ type Message struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
+// ConversationListItem represents conversation with last message info for list view
+type ConversationListItem struct {
+	ID            int       `json:"id"`
+	PhoneNumber   string    `json:"phone_number"`
+	IsSales       bool      `json:"is_sales"`
+	LastMessage   string    `json:"last_message"`
+	LastMessageAt time.Time `json:"last_message_at"`
+	MessageCount  int       `json:"message_count"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
 type Lead struct {
 	ID               int       `json:"id"`
 	TenantID         int       `json:"tenant_id"`

@@ -1,0 +1,236 @@
+{{define "home.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - {{.TenantName}}</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Temukan mobil impian Anda di {{.TenantName}}. Katalog lengkap mobil bekas berkualitas dengan harga terbaik.">
+    <meta name="keywords" content="mobil, mobil bekas, jual mobil, beli mobil, katalog mobil">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="{{.TenantName}} - Temukan Mobil Impian Anda">
+    <meta property="og:description" content="Jelajahi koleksi mobil bekas pilihan kami. Kualitas terjamin, harga terpercaya, dan pelayanan terbaik.">
+    <meta property="og:image" content="{{.LogoPath}}">
+    <meta property="og:url" content="{{.BaseURL}}">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon -->
+    {{if .FaviconPath}}
+    <link rel="icon" type="image/x-icon" href="{{.FaviconPath}}">
+    {{end}}
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/static/css/output.css">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    {{template "nav" .}}
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                        Cari Mobil Impian Anda
+                    </h1>
+                    <p class="text-xl mb-8">
+                        Jelajahi koleksi mobil bekas pilihan kami dengan kualitas terjamin
+                    </p>
+                    <a href="/mobil" class="inline-block bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
+                        Lihat Semua Mobil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Kualitas Terjamin</h3>
+                    <p class="text-gray-600">Setiap mobil diperiksa secara menyeluruh untuk ketenangan pikiran Anda</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Harga Terbaik</h3>
+                    <p class="text-gray-600">Harga kompetitif dengan biaya transparan tanpa biaya tersembunyi</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Pilihan Lengkap</h3>
+                    <p class="text-gray-600">Beragam pilihan merek dan model untuk memenuhi kebutuhan Anda</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Cars -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Mobil Pilihan</h2>
+                    <p class="text-gray-600 text-sm mt-1">Koleksi terbaik dari kendaraan kami</p>
+                </div>
+                <a href="/mobil" class="text-blue-600 hover:text-blue-700 font-semibold text-sm">Lihat Semua →</a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{range .FeaturedCars}}
+                <a href="/mobil/{{.ID}}" class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
+                    <div class="relative h-64 bg-gray-100">
+                        {{if .Photos}}
+                        <img src="{{index .Photos 0}}" alt="{{.Brand}} {{.Model}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        {{else}}
+                        <div class="flex items-center justify-center h-full text-gray-400">
+                            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        {{end}}
+                        {{if .Code}}
+                        <div class="absolute top-3 right-3 bg-gray-900 bg-opacity-90 text-white px-3 py-1 rounded text-sm font-semibold">
+                            {{.Code}}
+                        </div>
+                        {{end}}
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{.Brand}} {{.Model}}</h3>
+                        <p class="text-sm text-gray-600 mb-3">{{.Year}} • {{.Color}}</p>
+
+                        <p class="text-2xl font-bold text-blue-600 mb-4">Rp {{formatPrice .Price}}</p>
+
+                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <span>{{formatMileage .Mileage}}</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>{{.Transmission}}</span>
+                            </div>
+                        </div>
+
+                        {{if .Features}}
+                        <div class="space-y-1">
+                            {{range $index, $feature := .Features}}
+                            {{if lt $index 2}}
+                            <div class="inline-block bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs mr-2">
+                                {{$feature}}
+                            </div>
+                            {{end}}
+                            {{end}}
+                            {{if gt (len .Features) 2}}
+                            <div class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs">
+                                +{{sub (len .Features) 2}} lainnya
+                            </div>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Bottom CTA Section -->
+        <div class="bg-blue-600 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold mb-3">Siap Menemukan Mobil Impian Anda?</h2>
+                <p class="text-lg mb-8 text-blue-100">Jelajahi koleksi lengkap kami atau hubungi kami untuk bantuan personal</p>
+                <a href="/mobil" class="inline-block bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
+                    Lihat Semua Mobil
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    {{template "footer" .}}
+
+    <!-- Floating WhatsApp Button -->
+    <div id="whatsapp-button" class="fixed bottom-6 right-6 z-50">
+        <a id="whatsapp-link"
+           href="#"
+           target="_blank"
+           class="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+           title="Hubungi via WhatsApp">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.888 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+        </a>
+    </div>
+
+    <script>
+    // Initialize WhatsApp button with effective number
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeWhatsAppButton();
+    });
+
+    async function initializeWhatsAppButton() {
+        try {
+            const response = await fetch('/api/admin/whatsapp/effective-number');
+            if (response.ok) {
+                const data = await response.json();
+                const whatsappLink = document.getElementById('whatsapp-link');
+                const message = encodeURIComponent('Halo, saya ingin bertanya tentang mobil');
+                whatsappLink.href = `https://wa.me/${data.effective_number}?text=${message}`;
+
+                // Update tooltip based on bot availability
+                if (data.is_bot_available) {
+                    whatsappLink.title = 'Hubungi Bot WhatsApp AI';
+                } else {
+                    whatsappLink.title = 'Hubungi Sales via WhatsApp';
+                }
+            } else {
+                // Fallback to default number if API fails
+                const whatsappLink = document.getElementById('whatsapp-link');
+                const defaultNumber = '{{.WhatsAppNumber}}';
+                const message = encodeURIComponent('Halo, saya ingin bertanya tentang mobil');
+                whatsappLink.href = `https://wa.me/${defaultNumber}?text=${message}`;
+            }
+        } catch (error) {
+            console.error('Failed to initialize WhatsApp button:', error);
+            // Fallback to default number
+            const whatsappLink = document.getElementById('whatsapp-link');
+            const defaultNumber = '{{.WhatsAppNumber}}';
+            const message = encodeURIComponent('Halo, saya ingin bertanya tentang mobil');
+            whatsappLink.href = `https://wa.me/${defaultNumber}?text=${message}`;
+        }
+    }
+    </script>
+</body>
+</html>
+{{end}}

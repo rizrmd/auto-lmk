@@ -1,0 +1,102 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>6</storyId>
+    <title>showroom-information</title>
+    <status>backlog</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/7-6-showroom-information.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As an admin user</asA>
+    <iWant>to manage showroom address and location information</iWant>
+    <soThat>customers can find and visit our physical location</soThat>
+    <tasks>- Create showroom settings database table
+- Implement showroom admin interface
+- Create contact page with map integration
+- Test showroom functionality</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given I am admin, when I access showroom settings, then I can set address, phone, email, and business hours.
+
+2. Given I set location, when I add coordinates or embed map, then location appears on contact/about page.
+
+3. Given showroom info is set, when visitors view contact page, then they see complete address and map.
+
+4. Given I update info, when I save changes, then updates appear immediately on public pages.
+
+5. Given multiple showrooms exist, when each tenant sets their info, then information is isolated per tenant.
+
+6. Given visitors want directions, when they click map or address, then they get navigation options.</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epics Breakdown</title>
+        <section>Epic 7: Public Website Enhancement</section>
+        <snippet>FR-7.6: Showroom Information - Address, location, and contact details</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>internal/handler/showroom_handler.go</path>
+        <kind>handler</kind>
+        <symbol>ShowroomHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Handler for showroom information management</reason>
+      </artifact>
+      <artifact>
+        <path>internal/repository/showroom_repository.go</path>
+        <kind>repository</kind>
+        <symbol>ShowroomRepository</symbol>
+        <lines>1-80</lines>
+        <reason>Repository for showroom data per tenant</reason>
+      </artifact>
+      <artifact>
+        <path>templates/pages/contact.html</path>
+        <kind>template</kind>
+        <symbol>contact page</symbol>
+        <lines>1-80</lines>
+        <reason>Frontend contact page with showroom information</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <go>
+        <dependency name="github.com/gorilla/mux" version="latest">HTTP router</dependency>
+        <dependency name="database/sql" version="stdlib">Database access</dependency>
+      </go>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- Tenant-specific showroom information
+- Map integration with coordinates
+- Contact form integration
+- Responsive design for contact page
+- Business hours display</constraints>
+  <interfaces>
+    <interface>
+      <name>Showroom Settings API</name>
+      <kind>HTTP GET/POST</kind>
+      <signature>GET/POST /api/admin/showroom</signature>
+      <path>internal/handler/showroom_handler.go</path>
+    </interface>
+    <interface>
+      <name>Public Showroom API</name>
+      <kind>HTTP GET</kind>
+      <signature>GET /api/showroom</signature>
+      <path>internal/handler/showroom_handler.go</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Go testing for unit tests, integration tests for API endpoints</standards>
+    <locations>Unit tests in *_test.go files, integration tests in tests/ directory</locations>
+    <ideas>- Test showroom settings save/retrieve
+- Test contact page display
+- Test map integration
+- Test tenant isolation</ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,930 @@
+{{define "head"}}
+<!-- Basecoat UI -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/basecoat.cdn.min.css">
+<script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/js/all.min.js" defer></script>
+
+<!-- HTMX -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<!-- Alpine.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- Enhanced Blog SEO Meta Tags with Pagination Support -->
+{{if .Category}}
+<meta name="description" content="Blog {{.TenantName}} - Kategori: {{.Category}}. Artikel lengkap seputar mobil bekas, tips otomotif, panduan pembelian {{.Category}}, dan berita industri terkini. Temukan informasi berguna sebelum membeli mobil impian Anda.">
+<meta name="keywords" content="blog mobil, artikel otomotif, {{.Category}}, tips mobil bekas, panduan beli mobil, perawatan mobil, berita otomotif, {{.TenantName}} blog, review mobil, tips kredit mobil, mobil bekas berkualitas, showroom mobil terpercaya">
+{{else if .Tag}}
+<meta name="description" content="Blog {{.TenantName}} - Tag: {{.Tag}}. Kumpulan artikel seputar {{.Tag}}, tips otomotif, panduan pembelian mobil bekas, dan berita industri terkini. Temukan informasi berguna sebelum membeli mobil impian Anda.">
+<meta name="keywords" content="blog mobil, artikel otomotif, {{.Tag}}, tips mobil bekas, panduan beli mobil, perawatan mobil, berita otomotif, {{.TenantName}} blog, review mobil, tips kredit mobil, mobil bekas berkualitas, showroom mobil terpercaya">
+{{else}}
+<meta name="description" content="Blog {{.TenantName}} - Artikel lengkap seputar mobil bekas, tips otomotif, panduan pembelian, perawatan kendaraan, dan berita industri terkini. Temukan informasi berguna sebelum membeli mobil impian Anda.">
+<meta name="keywords" content="blog mobil, artikel otomotif, tips mobil bekas, panduan beli mobil, perawatan mobil, berita otomotif, {{.TenantName}} blog, review mobil, tips kredit mobil, mobil bekas berkualitas, showroom mobil terpercaya">
+{{end}}
+<meta name="author" content="{{.TenantName}}">
+<meta name="robots" content="index, follow">
+<meta name="language" content="id-ID">
+
+<!-- Canonical URL with Pagination Support -->
+{{if .Category}}
+<link rel="canonical" href="{{.BaseURL}}/blog/category/{{.CategorySlug}}" />
+{{else if .Tag}}
+<link rel="canonical" href="{{.BaseURL}}/blog/tag/{{.TagSlug}}" />
+{{else if .Page}}
+<link rel="canonical" href="{{.BaseURL}}/blog?page={{.Page}}" />
+{{else}}
+<link rel="canonical" href="{{.BaseURL}}/blog" />
+{{end}}
+
+<!-- Pagination Links -->
+{{if .HasPrev}}
+{{if .Category}}
+<link rel="prev" href="{{.BaseURL}}/blog/category/{{.CategorySlug}}{{if ne .PrevPage 1}}?page={{.PrevPage}}{{end}}" />
+{{else if .Tag}}
+<link rel="prev" href="{{.BaseURL}}/blog/tag/{{.TagSlug}}{{if ne .PrevPage 1}}?page={{.PrevPage}}{{end}}" />
+{{else}}
+<link rel="prev" href="{{.BaseURL}}/blog{{if ne .PrevPage 1}}?page={{.PrevPage}}{{end}}" />
+{{end}}
+{{end}}
+
+{{if .HasNext}}
+{{if .Category}}
+<link rel="next" href="{{.BaseURL}}/blog/category/{{.CategorySlug}}?page={{.NextPage}}" />
+{{else if .Tag}}
+<link rel="next" href="{{.BaseURL}}/blog/tag/{{.TagSlug}}?page={{.NextPage}}" />
+{{else}}
+<link rel="next" href="{{.BaseURL}}/blog?page={{.NextPage}}" />
+{{end}}
+{{end}}
+
+<!-- Enhanced Open Graph -->
+{{if .Category}}
+<meta property="og:title" content="Blog {{.TenantName}} - Kategori: {{.Category}}">
+<meta property="og:description" content="Artikel lengkap kategori {{.Category}} seputar mobil bekas, tips otomotif, dan panduan pembelian. Dapatkan informasi terpercaya sebelum membeli mobil impian Anda.">
+{{else if .Tag}}
+<meta property="og:title" content="Blog {{.TenantName}} - Tag: {{.Tag}}">
+<meta property="og:description" content="Kumpulan artikel tag {{.Tag}} seputar mobil bekas, tips otomotif, dan panduan pembelian. Dapatkan informasi terpercaya sebelum membeli mobil impian Anda.">
+{{else}}
+<meta property="og:title" content="Blog {{.TenantName}} - Artikel & Tips Otomotif">
+<meta property="og:description" content="Artikel lengkap seputar mobil bekas, tips otomotif, dan panduan pembelian. Dapatkan informasi terpercaya sebelum membeli mobil impian Anda.">
+{{end}}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{.TenantName}}">
+<meta property="og:locale" content="id_ID">
+{{if .Category}}
+<meta property="og:url" content="{{.BaseURL}}/blog/category/{{.CategorySlug}}">
+{{else if .Tag}}
+<meta property="og:url" content="{{.BaseURL}}/blog/tag/{{.TagSlug}}">
+{{else if .Page}}
+<meta property="og:url" content="{{.BaseURL}}/blog?page={{.Page}}">
+{{else}}
+<meta property="og:url" content="{{.BaseURL}}/blog">
+{{end}}
+<meta property="og:image" content="{{.LogoPath}}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+{{if .Category}}
+<meta name="twitter:title" content="Blog {{.TenantName}} - Kategori: {{.Category}}">
+<meta name="twitter:description" content="Artikel kategori {{.Category}} seputar mobil bekas dan tips otomotif.">
+{{else if .Tag}}
+<meta name="twitter:title" content="Blog {{.TenantName}} - Tag: {{.Tag}}">
+<meta name="twitter:description" content="Kumpulan artikel tag {{.Tag}} seputar mobil bekas dan tips otomotif.">
+{{else}}
+<meta name="twitter:title" content="Blog {{.TenantName}} - Artikel Otomotif">
+<meta name="twitter:description" content="Tips dan panduan lengkap seputar mobil bekas.">
+{{end}}
+<meta name="twitter:image" content="{{.LogoPath}}">
+
+<!-- Enhanced Blog Schema Markup with CollectionPage -->
+<script id="blog-schema" type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    {{if .Category}}
+    "name": "Blog {{.TenantName}} - Kategori: {{.Category}}",
+    "description": "Artikel lengkap kategori {{.Category}} seputar mobil bekas, tips otomotif, dan panduan pembelian",
+    "url": "{{.BaseURL}}/blog/category/{{.CategorySlug}}",
+    {{else if .Tag}}
+    "name": "Blog {{.TenantName}} - Tag: {{.Tag}}",
+    "description": "Kumpulan artikel tag {{.Tag}} seputar mobil bekas, tips otomotif, dan panduan pembelian",
+    "url": "{{.BaseURL}}/blog/tag/{{.TagSlug}}",
+    {{else}}
+    "name": "Blog {{.TenantName}} - Artikel & Tips Otomotif",
+    "description": "Artikel lengkap seputar mobil bekas, tips otomotif, panduan pembelian, perawatan kendaraan, dan berita industri terkini",
+    "url": "{{.BaseURL}}/blog",
+    {{end}}
+    "isPartOf": {
+        "@type": "WebSite",
+        "name": "{{.TenantName}}",
+        "url": "{{.BaseURL}}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "{{.TenantName}}",
+        "url": "{{.BaseURL}}",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "{{.LogoPath}}",
+            "width": 300,
+            "height": 60
+        }
+    },
+    "inLanguage": "id-ID",
+    "about": {
+        "@type": "Thing",
+        "name": "Otomotif"
+    },
+    "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": 0,
+        "itemListElement": []
+    },
+    "dateModified": "{{.CurrentDate}}",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "{{.BaseURL}}/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Blog",
+                "item": "{{.BaseURL}}/blog"
+            }
+            {{if .Category}},
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "{{.Category}}",
+                "item": "{{.BaseURL}}/blog/category/{{.CategorySlug}}"
+            }
+            {{end}}
+            {{if .Tag}},
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "{{.Tag}}",
+                "item": "{{.BaseURL}}/blog/tag/{{.TagSlug}}"
+            }
+            {{end}}
+        ]
+    }
+}
+</script>
+
+<!-- Pagination Schema -->
+<script id="pagination-schema" type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "hasPart": []
+}
+</script>
+
+<script>
+    // Enhanced SEO Analysis Functions for Blog Posts
+    function calculateReadingTime(content) {
+        const wordsPerMinute = 200;
+        const wordCount = content.trim().split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        return { readingTime, wordCount };
+    }
+
+    function extractCarMentions(content) {
+        const carKeywords = [
+            'Toyota', 'Honda', 'Mitsubishi', 'Suzuki', 'Daihatsu', 'Nissan', 'Mazda', 'Hyundai', 'Kia',
+            'Avanza', 'Xenia', 'Jazz', 'Yaris', 'Civic', 'Brio', 'Mobilio', 'Ertiga', 'Xpander', 'Pajero Sport',
+            'Fortuner', 'CR-V', 'HR-V', 'Alphard', 'Vellfire', 'Camry', 'Corolla', 'Innova', 'Rush', 'Terios'
+        ];
+
+        const mentionedCars = [];
+        carKeywords.forEach(car => {
+            const regex = new RegExp(`\\b${car}\\b`, 'gi');
+            if (content.match(regex)) {
+                mentionedCars.push(car);
+            }
+        });
+
+        return [...new Set(mentionedCars)];
+    }
+
+    function generatePostTags(title, content) {
+        const tags = [];
+
+        // Extract tags from title and content
+        const automotiveTerms = ['tips', 'panduan', 'review', 'harga', 'spesifikasi', 'perawatan', 'test drive', 'mobil baru', 'mobil bekas', 'otomotif', 'mesin', 'bengkel'];
+        const contentLower = content.toLowerCase();
+        const titleLower = title.toLowerCase();
+
+        automotiveTerms.forEach(term => {
+            if (contentLower.includes(term) || titleLower.includes(term)) {
+                tags.push(term);
+            }
+        });
+
+        // Add car mentions as tags
+        const mentionedCars = extractCarMentions(content);
+        tags.push(...mentionedCars);
+
+        return [...new Set(tags)];
+    }
+
+    // Enhanced function to update blog schema with actual posts data
+    function updateBlogSchema(posts) {
+        const blogSchema = JSON.parse(document.getElementById('blog-schema').textContent);
+
+        if (posts && posts.length > 0) {
+            // Enhanced BlogPosting schema with rich data
+            const blogPosts = posts.map((post, index) => {
+                const { readingTime, wordCount } = calculateReadingTime(post.content);
+                const mentionedCars = extractCarMentions(post.content);
+                const tags = generatePostTags(post.title, post.content);
+
+                return {
+                    "@type": "BlogPosting",
+                    "headline": post.title,
+                    "description": post.excerpt || post.content.substring(0, 160),
+                    "url": `${window.location.origin}/blog/${post.slug}`,
+                    "datePublished": post.published_at || post.created_at,
+                    "dateModified": post.updated_at || post.published_at || post.created_at,
+                    "author": {
+                        "@type": "Organization",
+                        "name": "{{.TenantName}}",
+                        "url": "{{.BaseURL}}"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "{{.TenantName}}",
+                        "url": "{{.BaseURL}}",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "{{.LogoPath}}",
+                            "width": 300,
+                            "height": 60
+                        }
+                    },
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": `${window.location.origin}/blog/${post.slug}`
+                    },
+                    "image": {
+                        "@type": "ImageObject",
+                        "url": "{{.LogoPath}}",
+                        "width": 1200,
+                        "height": 630
+                    },
+                    "inLanguage": "id-ID",
+                    "isAccessibleForFree": true,
+                    "wordCount": wordCount,
+                    "timeRequired": `PT${readingTime}M`,
+                    "keywords": tags.join(', '),
+                    "articleSection": "Otomotif",
+                    "genre": "Automotive",
+                    "about": mentionedCars.length > 0 ? [
+                        {
+                            "@type": "Thing",
+                            "name": "Otomotif"
+                        },
+                        ...mentionedCars.map(car => ({
+                            "@type": "Thing",
+                            "name": car
+                        }))
+                    ] : [
+                        {
+                            "@type": "Thing",
+                            "name": "Otomotif"
+                        }
+                    ]
+                };
+            });
+
+            // Update mainEntity in blog schema
+            blogSchema.mainEntity = {
+                "@type": "ItemList",
+                "numberOfItems": posts.length,
+                "itemListElement": posts.map((post, index) => ({
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "item": blogPosts[index]
+                }))
+            };
+
+            // Update the blog schema
+            document.getElementById('blog-schema').textContent = JSON.stringify(blogSchema, null, 2);
+
+            // Create separate schema for individual blog posts
+            const blogPostsSchema = {
+                "@context": "https://schema.org",
+                "@type": "Blog",
+                "name": "{{.TenantName}} Blog",
+                "description": blogSchema.description,
+                "url": blogSchema.url,
+                "publisher": blogSchema.publisher,
+                "inLanguage": "id-ID",
+                "blogPost": blogPosts
+            };
+
+            // Update or create blog posts schema
+            let blogPostsScript = document.getElementById('blog-posts-schema');
+            if (!blogPostsScript) {
+                blogPostsScript = document.createElement('script');
+                blogPostsScript.id = 'blog-posts-schema';
+                blogPostsScript.type = 'application/ld+json';
+                document.head.appendChild(blogPostsScript);
+            }
+            blogPostsScript.textContent = JSON.stringify(blogPostsSchema, null, 2);
+        }
+
+        // Update pagination schema
+        updatePaginationSchema(posts);
+    }
+
+    function updatePaginationSchema(posts) {
+        const currentPage = {{.Page | default 1}};
+        const hasNext = {{.HasNext}};
+        const hasPrev = {{.HasPrev}};
+        const nextPage = {{.NextPage}};
+        const prevPage = {{.PrevPage}};
+
+        if (hasNext || hasPrev) {
+            const paginationSchema = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "url": window.location.href,
+                "numberOfItems": posts ? posts.length : 0,
+                "hasPart": []
+            };
+
+            if (hasPrev && prevPage) {
+                paginationSchema.hasPart.push({
+                    "@type": "CollectionPage",
+                    "url": prevPage > 1 ? `/blog?page=${prevPage}` : '/blog',
+                    "position": currentPage - 1
+                });
+            }
+
+            if (hasNext && nextPage) {
+                paginationSchema.hasPart.push({
+                    "@type": "CollectionPage",
+                    "url": `/blog?page=${nextPage}`,
+                    "position": currentPage + 1
+                });
+            }
+
+            const paginationScript = document.getElementById('pagination-schema');
+            if (paginationScript) {
+                paginationScript.textContent = JSON.stringify(paginationSchema, null, 2);
+            }
+        }
+    }
+
+    // Enhanced HTMX event handler
+    document.addEventListener('DOMContentLoaded', function() {
+        htmx.on('htmx:afterSwap', function(evt) {
+            // Update blog schema when blog posts are loaded
+            if (evt.detail.target.id === 'blog-posts') {
+                try {
+                    const response = evt.detail.xhr.response;
+                    const data = JSON.parse(response);
+
+                    // Handle both direct array and wrapped response formats
+                    const posts = Array.isArray(data) ? data : (data.posts || []);
+                    updateBlogSchema(posts);
+                } catch (error) {
+                    console.log('No blog posts to update schema:', error);
+                }
+            }
+        });
+    });
+
+    // Function to handle page changes and update meta tags
+    function updatePageMeta(pageInfo) {
+        const { page, category, tag, hasNext, hasPrev, nextPage, prevPage } = pageInfo;
+
+        // Update canonical URL
+        let canonicalUrl = '{{.BaseURL}}/blog';
+        if (category) {
+            canonicalUrl = `{{.BaseURL}}/blog/category/${category}`;
+        } else if (tag) {
+            canonicalUrl = `{{.BaseURL}}/blog/tag/${tag}`;
+        } else if (page > 1) {
+            canonicalUrl = `{{.BaseURL}}/blog?page=${page}`;
+        }
+
+        const canonicalLink = document.querySelector('link[rel="canonical"]');
+        if (canonicalLink) {
+            canonicalLink.setAttribute('href', canonicalUrl);
+        }
+
+        // Update pagination links
+        updatePaginationLinks(pageInfo);
+    }
+
+    function updatePaginationLinks(pageInfo) {
+        const { page, category, tag, hasNext, hasPrev, nextPage, prevPage } = pageInfo;
+
+        // Remove existing pagination links
+        const existingPrev = document.querySelector('link[rel="prev"]');
+        const existingNext = document.querySelector('link[rel="next"]');
+        if (existingPrev) existingPrev.remove();
+        if (existingNext) existingNext.remove();
+
+        // Add prev link
+        if (hasPrev) {
+            const prevLink = document.createElement('link');
+            prevLink.rel = 'prev';
+            if (category) {
+                prevLink.href = prevPage > 1 ? `{{.BaseURL}}/blog/category/${category}?page=${prevPage}` : `{{.BaseURL}}/blog/category/${category}`;
+            } else if (tag) {
+                prevLink.href = prevPage > 1 ? `{{.BaseURL}}/blog/tag/${tag}?page=${prevPage}` : `{{.BaseURL}}/blog/tag/${tag}`;
+            } else {
+                prevLink.href = prevPage > 1 ? `{{.BaseURL}}/blog?page=${prevPage}` : '{{.BaseURL}}/blog';
+            }
+            document.head.appendChild(prevLink);
+        }
+
+        // Add next link
+        if (hasNext) {
+            const nextLink = document.createElement('link');
+            nextLink.rel = 'next';
+            if (category) {
+                nextLink.href = `{{.BaseURL}}/blog/category/${category}?page=${nextPage}`;
+            } else if (tag) {
+                nextLink.href = `{{.BaseURL}}/blog/tag/${tag}?page=${nextPage}`;
+            } else {
+                nextLink.href = `{{.BaseURL}}/blog?page=${nextPage}`;
+            }
+            document.head.appendChild(nextLink);
+        }
+    }
+</script>
+{{end}}
+
+{{define "content"}}
+<!-- Enhanced Blog Header with SEO Breadcrumb -->
+<div class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- SEO Breadcrumb -->
+        <nav class="mb-4 text-sm" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2 text-gray-500" itemscope itemtype="https://schema.org/BreadcrumbList">
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/" itemprop="item" class="hover:text-blue-600">
+                        <span itemprop="name">Home</span>
+                    </a>
+                    <meta itemprop="position" content="1" />
+                </li>
+                <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></li>
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/blog" itemprop="item" class="hover:text-blue-600">
+                        <span itemprop="name">Blog</span>
+                    </a>
+                    <meta itemprop="position" content="2" />
+                </li>
+                {{if .Category}}
+                <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></li>
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name" class="text-gray-900 font-medium">{{.Category}}</span>
+                    <meta itemprop="position" content="3" />
+                </li>
+                {{end}}
+                {{if .Tag}}
+                <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></li>
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name" class="text-gray-900 font-medium">Tag: {{.Tag}}</span>
+                    <meta itemprop="position" content="3" />
+                </li>
+                {{end}}
+            </ol>
+        </nav>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            {{if .Category}}
+                Blog: {{.Category}}
+            {{else if .Tag}}
+                Blog: Tag {{.Tag}}
+            {{else}}
+                Blog {{.TenantName}}
+            {{end}}
+        </h1>
+        {{if .Category}}
+        <p class="text-gray-600">Artikel seputar {{.Category}} dan tips otomotif terkait</p>
+        {{else if .Tag}}
+        <p class="text-gray-600">Kumpulan artikel dengan tag "{{.Tag}}"</p>
+        {{else}}
+        <p class="text-gray-600">Artikel dan tips seputar otomotif, panduan pembelian mobil bekas, dan berita industri terkini</p>
+        {{end}}
+    </div>
+</div>
+
+<!-- Blog Categories & Filters -->
+<div class="bg-gray-50 border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <!-- Category Filter -->
+            <div class="flex flex-wrap gap-2">
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-blue-600 text-white" data-category="">
+                    Semua
+                </button>
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-700 border hover:bg-gray-50" data-category="tips">
+                    Tips
+                </button>
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-700 border hover:bg-gray-50" data-category="review">
+                    Review
+                </button>
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-700 border hover:bg-gray-50" data-category="panduan">
+                    Panduan
+                </button>
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-700 border hover:bg-gray-50" data-category="berita">
+                    Berita
+                </button>
+                <button class="category-filter px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-700 border hover:bg-gray-50" data-category="perawatan">
+                    Perawatan
+                </button>
+            </div>
+
+            <!-- Sort Options -->
+            <div class="flex items-center gap-2">
+                <label class="text-sm text-gray-600">Urutkan:</label>
+                <select id="sort-options" class="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="latest">Terbaru</option>
+                    <option value="oldest">Terlama</option>
+                    <option value="popular">Terpopuler</option>
+                    <option value="title">Judul A-Z</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blog Posts Grid -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="blog-posts"
+         hx-get="/api/admin/blog?status=published"
+         hx-trigger="load"
+         hx-swap="innerHTML"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Loading State -->
+        <div class="col-span-full flex items-center justify-center py-12">
+            <div class="text-center">
+                <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600">Memuat artikel...</p>
+            </div>
+        </div>
+
+        <!-- SEO Pagination Component -->
+        <div id="blog-pagination" class="mt-12 flex flex-col items-center space-y-4">
+            <nav aria-label="Pagination" class="flex items-center justify-center">
+                <div class="flex space-x-2">
+                    <!-- Previous Page -->
+                    {{if .HasPrev}}
+                    <a href="{{if .Category}}/blog/category/{{.CategorySlug}}{{else if .Tag}}/blog/tag/{{.TagSlug}}{{else}}/blog{{end}}{{if ne .PrevPage 1}}?page={{.PrevPage}}{{end}}"
+                       class="pagination-link px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Sebelumnya
+                    </a>
+                    {{end}}
+
+                    <!-- Page Numbers -->
+                    <div class="pagination-numbers flex space-x-1">
+                        <!-- Page numbers will be dynamically generated -->
+                    </div>
+
+                    <!-- Next Page -->
+                    {{if .HasNext}}
+                    <a href="{{if .Category}}/blog/category/{{.CategorySlug}}?page={{.NextPage}}{{else if .Tag}}/blog/tag/{{.TagSlug}}?page={{.NextPage}}{{else}}/blog?page={{.NextPage}}{{end}}"
+                       class="pagination-link px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center">
+                        Selanjutnya
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                    {{end}}
+                </div>
+            </nav>
+
+            <!-- SEO Schema for Current Page -->
+            <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": {{if .Category}}"Blog {{.TenantName}} - {{.Category}}"{{else if .Tag}}"Blog {{.TenantName}} - Tag {{.Tag}}"{{else}}"Blog {{.TenantName}}"{{end}},
+                "url": "{{if .Category}}{{.BaseURL}}/blog/category/{{.CategorySlug}}{{else if .Tag}}{{.BaseURL}}/blog/tag/{{.TagSlug}}{{else}}{{.BaseURL}}/blog{{end}}{{if .Page}}?page={{.Page}}{{end}}",
+                "description": {{if .Category}}"Artikel lengkap kategori {{.Category}} seputar mobil bekas, tips otomotif, dan panduan pembelian"{{else if .Tag}}"Kumpulan artikel tag {{.Tag}} seputar mobil bekas, tips otomotif, dan panduan pembelian"{{else}}"Artikel lengkap seputar mobil bekas, tips otomotif, panduan pembelian, dan berita industri terkini"{{end}},
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "numberOfItems": 0,
+                    "itemListElement": []
+                },
+                "breadcrumb": {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": 1,
+                            "name": "Home",
+                            "item": "{{.BaseURL}}/"
+                        },
+                        {
+                            "@type": "ListItem",
+                            "position": 2,
+                            "name": "Blog",
+                            "item": "{{.BaseURL}}/blog"
+                        }
+                        {{if .Category}},
+                        {
+                            "@type": "ListItem",
+                            "position": 3,
+                            "name": "{{.Category}}",
+                            "item": "{{.BaseURL}}/blog/category/{{.CategorySlug}}"
+                        }
+                        {{end}}
+                        {{if .Tag}},
+                        {
+                            "@type": "ListItem",
+                            "position": 3,
+                            "name": "{{.Tag}}",
+                            "item": "{{.BaseURL}}/blog/tag/{{.TagSlug}}"
+                        }
+                        {{end}}
+                    ]
+                }
+            }
+            </script>
+        </div>
+
+        <!-- Related Cars Section (SEO Integration) -->
+        <div class="mt-8 bg-blue-50 rounded-lg p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">🚗 Cari Mobil Sesuai Artikel</h3>
+            <p class="text-gray-600 mb-4">Temukan mobil yang sesuai dengan artikel yang Anda baca di showroom kami.</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <a href="/cars" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Lihat Semua Mobil
+                </a>
+                <a href="/cars?brand=Toyota" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    Toyota
+                </a>
+                <a href="/cars?brand=Honda" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    Honda
+                </a>
+                <a href="/cars?brand=Mitsubishi" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    Mitsubishi
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive JavaScript for Blog Filtering and SEO -->
+<script>
+    // Category filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryFilters = document.querySelectorAll('.category-filter');
+        const sortOptions = document.getElementById('sort-options');
+        const blogPostsContainer = document.getElementById('blog-posts');
+
+        // Handle category filter clicks
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('click', function() {
+                const category = this.dataset.category;
+
+                // Update active state
+                categoryFilters.forEach(f => {
+                    f.classList.remove('bg-blue-600', 'text-white');
+                    f.classList.add('bg-white', 'text-gray-700', 'border');
+                });
+                this.classList.remove('bg-white', 'text-gray-700', 'border');
+                this.classList.add('bg-blue-600', 'text-white');
+
+                // Update URL and fetch filtered posts
+                if (category) {
+                    window.history.pushState({}, '', `/blog/category/${category}`);
+                    // Trigger HTMX request for filtered posts
+                    blogPostsContainer.setAttribute('hx-get', `/api/admin/blog?category=${category}&status=published`);
+                } else {
+                    window.history.pushState({}, '', '/blog');
+                    blogPostsContainer.setAttribute('hx-get', `/api/admin/blog?status=published`);
+                }
+
+                // Reload posts
+                htmx.trigger(blogPostsContainer, 'load');
+            });
+        });
+
+        // Handle sort options
+        if (sortOptions) {
+            sortOptions.addEventListener('change', function() {
+                const sortBy = this.value;
+                const currentUrl = new URL(window.location);
+
+                // Update URL parameter
+                currentUrl.searchParams.set('sort', sortBy);
+                window.history.pushState({}, '', currentUrl.toString());
+
+                // Update HTMX request
+                const hxGet = blogPostsContainer.getAttribute('hx-get') || '/api/admin/blog?status=published';
+                const separator = hxGet.includes('?') ? '&' : '?';
+                blogPostsContainer.setAttribute('hx-get', `${hxGet}${separator}sort=${sortBy}`);
+
+                // Reload posts
+                htmx.trigger(blogPostsContainer, 'load');
+            });
+        }
+
+        // Generate pagination numbers dynamically
+        function generatePaginationNumbers(currentPage, totalPages) {
+            const paginationNumbers = document.querySelector('.pagination-numbers');
+            if (!paginationNumbers) return;
+
+            let html = '';
+
+            // Show first page
+            if (currentPage > 3) {
+                html += `<a href="/blog?page=1" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">1</a>`;
+                if (currentPage > 4) {
+                    html += `<span class="px-3 py-2 text-sm text-gray-500">...</span>`;
+                }
+            }
+
+            // Show pages around current
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-md">${i}</span>`;
+                } else {
+                    html += `<a href="/blog?page=${i}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">${i}</a>`;
+                }
+            }
+
+            // Show last page
+            if (currentPage < totalPages - 2) {
+                if (currentPage < totalPages - 3) {
+                    html += `<span class="px-3 py-2 text-sm text-gray-500">...</span>`;
+                }
+                html += `<a href="/blog?page=${totalPages}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">${totalPages}</a>`;
+            }
+
+            paginationNumbers.innerHTML = html;
+        }
+
+        // Call this function after posts are loaded to update pagination
+        htmx.on('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'blog-posts') {
+                // Update pagination if needed
+                const currentPage = {{.Page | default 1}};
+                // This would need to be implemented based on actual pagination data from API
+                // generatePaginationNumbers(currentPage, totalPages);
+            }
+        });
+    });
+
+    htmx.on('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'blog-posts') {
+            try {
+                const data = JSON.parse(evt.detail.xhr.response);
+
+                if (!data || data.length === 0) {
+                    evt.detail.target.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                            </svg>
+                            <p class="text-gray-600 text-lg">Belum ada artikel yang dipublikasikan</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                evt.detail.target.innerHTML = data.map(post => {
+                    const publishedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    }) : '';
+
+                    // Enhanced SEO analysis for each post
+                    const { readingTime, wordCount } = calculateReadingTime(post.content);
+                    const mentionedCars = extractCarMentions(post.content);
+                    const tags = generatePostTags(post.title, post.content);
+                    const excerpt = post.excerpt || post.content.substring(0, 150) + '...';
+
+                    return `
+                        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300" itemscope itemtype="https://schema.org/BlogPosting">
+                            <!-- SEO Microdata -->
+                            <meta itemprop="headline" content="${post.title}">
+                            <meta itemprop="description" content="${excerpt}">
+                            <meta itemprop="datePublished" content="${post.published_at || post.created_at}">
+                            <meta itemprop="dateModified" content="${post.updated_at || post.published_at || post.created_at}">
+                            <meta itemprop="author" content="{{.TenantName}}">
+                            <meta itemprop="publisher" content="{{.TenantName}}">
+                            <meta itemprop="image" content="{{.LogoPath}}">
+                            <meta itemprop="wordCount" content="${wordCount}">
+                            <meta itemprop="timeRequired" content="PT${readingTime}M">
+                            <link itemprop="mainEntityOfPage" href="${window.location.origin}/blog/${post.slug}">
+                            <link itemprop="url" href="${window.location.origin}/blog/${post.slug}">
+
+                            <div class="p-6">
+                                <!-- Post Meta with Enhanced SEO -->
+                                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-3">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <time datetime="${post.published_at}">${publishedDate}</time>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>${readingTime} menit</span>
+                                    </div>
+                                    ${mentionedCars.length > 0 ? `
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <span>${wordCount} kata</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <!-- Car Mentions -->
+                                ${mentionedCars.length > 0 ? `
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    ${mentionedCars.slice(0, 3).map(car => `
+                                        <a href="/cars?search=${encodeURIComponent(car)}"
+                                           class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full hover:bg-blue-100 transition-colors">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                            </svg>
+                                            ${car}
+                                        </a>
+                                    `).join('')}
+                                    ${mentionedCars.length > 3 ? `
+                                    <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                        +${mentionedCars.length - 3} mobil
+                                    </span>
+                                    ` : ''}
+                                </div>
+                                ` : ''}
+
+                                <!-- Post Title with SEO -->
+                                <h2 class="text-xl font-bold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
+                                    <a href="/blog/${post.slug}" class="line-clamp-2" itemprop="url">
+                                        <span itemprop="name">${post.title}</span>
+                                    </a>
+                                </h2>
+
+                                <!-- Post Excerpt -->
+                                <p class="text-gray-600 mb-4 line-clamp-3" itemprop="description">
+                                    ${excerpt}
+                                </p>
+
+                                <!-- Tags -->
+                                ${tags.length > 0 ? `
+                                <div class="flex flex-wrap gap-1 mb-4">
+                                    ${tags.slice(0, 4).map(tag => `
+                                        <a href="/blog/tag/${tag}" class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200 transition-colors">
+                                            #${tag}
+                                        </a>
+                                    `).join('')}
+                                </div>
+                                ` : ''}
+
+                                <!-- Read More Link with Enhanced SEO -->
+                                <a href="/blog/${post.slug}"
+                                   class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors group">
+                                    Baca Selengkapnya
+                                    <svg class="w-4 h-4 ml-1 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error parsing blog posts:', error);
+                evt.detail.target.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-red-600">Gagal memuat artikel. Silakan coba lagi nanti.</p>
+                    </div>
+                `;
+            }
+        }
+    });
+</script>
+{{end}}

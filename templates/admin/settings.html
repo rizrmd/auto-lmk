@@ -1,0 +1,216 @@
+{{define "content"}}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Pengaturan</h1>
+    <p class="text-gray-600 mt-1">Kelola pengaturan aplikasi Anda</p>
+</div>
+
+<!-- Settings Grid -->
+<div class="grid grid-cols-1 gap-6">
+    <!-- Business Information Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <span class="text-xl mr-2">🏢</span>
+            Informasi Bisnis
+        </h2>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tenant</label>
+                <input type="text"
+                       value="{{.TenantName}}"
+                       disabled
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed">
+                <p class="text-xs text-gray-500 mt-1">Nama tenant saat ini</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp</label>
+                <input type="text"
+                       value="{{.WhatsAppNumber}}"
+                       disabled
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed">
+                <p class="text-xs text-gray-500 mt-1">Nomor WhatsApp untuk bot</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Bisnis</label>
+                <textarea disabled
+                          rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed">{{.Description}}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Deskripsi singkat tentang bisnis Anda</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Settings -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <span class="text-xl mr-2">📱</span>
+            Pengaturan WhatsApp
+        </h2>
+        <form id="whatsapp-settings-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Bot WhatsApp</label>
+                <input type="text"
+                       id="bot-number"
+                       placeholder="6281234567890"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Nomor WhatsApp yang terhubung dengan bot AI</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Sales Fallback *</label>
+                <input type="text"
+                       id="fallback-number"
+                       placeholder="6281234567890"
+                       required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Nomor WhatsApp sales yang digunakan jika bot tidak tersedia</p>
+            </div>
+            <div class="flex items-center justify-between pt-4">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                    Simpan Pengaturan
+                </button>
+                <a href="/admin/whatsapp" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium">
+                    Kelola Bot WhatsApp
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sales Team Settings -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <span class="text-xl mr-2">👥</span>
+            Pengaturan Tim Sales
+        </h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-md">
+                <div>
+                    <p class="font-medium text-gray-900">Manajemen Tim Sales</p>
+                    <p class="text-sm text-gray-600">Kelola anggota tim sales Anda</p>
+                </div>
+                <a href="/admin/sales" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                    Kelola Tim Sales
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Settings -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <span class="text-xl mr-2">🚗</span>
+            Pengaturan Inventaris
+        </h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-md">
+                <div>
+                    <p class="font-medium text-gray-900">Manajemen Mobil</p>
+                    <p class="text-sm text-gray-600">Kelola inventaris mobil Anda</p>
+                </div>
+                <a href="/admin/cars" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                    Kelola Mobil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <span class="text-xl mr-2">ℹ️</span>
+            Informasi Sistem
+        </h2>
+        <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-200">
+                <span class="text-sm text-gray-600">Platform</span>
+                <span class="text-sm font-medium text-gray-900">Auto LMK</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-200">
+                <span class="text-sm text-gray-600">Version</span>
+                <span class="text-sm font-medium text-gray-900">1.0.0</span>
+            </div>
+            <div class="flex justify-between py-2">
+                <span class="text-sm text-gray-600">Environment</span>
+                <span class="text-sm font-medium text-gray-900">Development</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Future Settings Placeholder -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div class="flex items-start">
+            <span class="text-2xl mr-3">💡</span>
+            <div>
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Pengaturan Tambahan</h3>
+                <p class="text-sm text-blue-800">
+                    Fitur pengaturan tambahan akan ditambahkan di sini, seperti:
+                </p>
+                <ul class="list-disc list-inside text-sm text-blue-800 mt-2 space-y-1">
+                    <li>Konfigurasi email notifications</li>
+                    <li>Pengaturan timezone</li>
+                    <li>Preferensi tampilan</li>
+                    <li>Backup & restore data</li>
+                    <li>API keys management</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load WhatsApp settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadWhatsAppSettings();
+});
+
+// Load WhatsApp settings
+async function loadWhatsAppSettings() {
+    try {
+        const response = await fetch('/api/admin/whatsapp/settings');
+        if (response.ok) {
+            const settings = await response.json();
+            document.getElementById('bot-number').value = settings.bot_number || '';
+            document.getElementById('fallback-number').value = settings.fallback_number || '';
+        } else {
+            console.error('Failed to load WhatsApp settings');
+        }
+    } catch (error) {
+        console.error('Error loading WhatsApp settings:', error);
+    }
+}
+
+// Save WhatsApp settings
+document.getElementById('whatsapp-settings-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const botNumber = document.getElementById('bot-number').value.trim();
+    const fallbackNumber = document.getElementById('fallback-number').value.trim();
+
+    if (!fallbackNumber) {
+        alert('Nomor sales fallback wajib diisi');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/whatsapp/settings', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                bot_number: botNumber || null,
+                fallback_number: fallbackNumber
+            })
+        });
+
+        if (response.ok) {
+            alert('Pengaturan WhatsApp berhasil disimpan');
+        } else {
+            const error = await response.text();
+            alert('Gagal menyimpan pengaturan: ' + error);
+        }
+    } catch (error) {
+        console.error('Error saving WhatsApp settings:', error);
+        alert('Terjadi kesalahan saat menyimpan pengaturan');
+    }
+});
+</script>
+{{end}}

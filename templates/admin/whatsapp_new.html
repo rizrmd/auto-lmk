@@ -1,0 +1,482 @@
+{{define "content"}}
+<div x-data="{
+    pairingState: 'disconnected',
+    timeoutSeconds: 120,
+    timeoutInterval: null,
+    statusPollInterval: null,
+    qrRefreshInterval: null,
+    tenantID: null,
+    showDisconnectModal: false,
+    testMessage: '',
+    testSending: false,
+    testResponse: null,
+    disconnecting: false,
+    disconnectError: null
+}" x-init="
+    // Load initial status
+    fetch('/api/admin/whatsapp/status', {
+        headers: { 'X-Tenant-ID': '{{.TenantID}}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.is_connected) {
+            pairingState = 'connected';
+        }
+        tenantID = data.tenant_id;
+    })
+    .catch(err => console.error('Failed to load status:', err));
+">
+
+    <div class="mb-4 md:mb-6">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900">WhatsApp Management</h1>
+        <p class="hidden md:block text-gray-600 mt-1">Kelola koneksi WhatsApp Bot Anda</p>
+    </div>
+
+    <!-- Status Card -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex-shrink-0">
+                        <!-- Status Badge -->
+                        <span x-show="pairingState === 'disconnected'"
+                              class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
+                            ❌ Disconnected
+                        </span>
+                        <span x-show="pairingState === 'pairing'"
+                              class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            ⏳ Pairing...
+                        </span>
+                        <span x-show="pairingState === 'connected'"
+                              class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                            ✅ Connected
+                        </span>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Connection Status</h2>
+                        <p class="text-sm text-gray-500" x-show="pairingState === 'disconnected'">
+                            WhatsApp bot belum terhubung
+                        </p>
+                        <p class="text-sm text-gray-500" x-show="pairingState === 'pairing'">
+                            Menunggu scan QR code...
+                        </p>
+                        <p class="text-sm text-gray-500" x-show="pairingState === 'connected'">
+                            WhatsApp bot aktif dan siap menerima pesan
+                        </p>
+                    </div>
+                </div>
+                <div x-show="pairingState === 'pairing'" class="text-sm text-gray-600">
+                    Timeout: <span x-text="timeoutSeconds"></span>s
+                </div>
+            </div>
+        </div>
+
+        <!-- Pairing Form Section -->
+        <div x-show="pairingState === 'disconnected'" class="p-4 md:p-6">
+            <h3 class="text-md font-semibold text-gray-900 mb-4">Mulai Pairing</h3>
+            <form @submit.prevent="
+                pairingState = 'pairing';
+                timeoutSeconds = 120;
+
+                // Start timeout timer
+                timeoutInterval = setInterval(() => {
+                    timeoutSeconds--;
+                    if (timeoutSeconds <= 0) {
+                        clearInterval(timeoutInterval);
+                        clearInterval(statusPollInterval);
+                        clearInterval(qrRefreshInterval);
+                        pairingState = 'disconnected';
+                        alert('Pairing timeout. Silakan coba lagi.');
+                    }
+                }, 1000);
+
+                // Initiate pairing - NO phone number required!
+                fetch('/api/admin/whatsapp/pair', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Tenant-ID': '{{.TenantID}}'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('Pairing initiated:', data);
+                    tenantID = data.tenant_id || tenantID;
+
+                    // Start status polling (every 3 seconds)
+                    statusPollInterval = setInterval(() => {
+                        fetch('/api/admin/whatsapp/status', {
+                            headers: { 'X-Tenant-ID': '{{.TenantID}}' }
+                        })
+                        .then(r => r.json())
+                        .then(statusData => {
+                            if (statusData.is_connected) {
+                                clearInterval(timeoutInterval);
+                                clearInterval(statusPollInterval);
+                                clearInterval(qrRefreshInterval);
+                                pairingState = 'connected';
+                            }
+                        });
+                    }, 3000);
+                })
+                .catch(err => {
+                    console.error('Pairing failed:', err);
+                    clearInterval(timeoutInterval);
+                    pairingState = 'disconnected';
+                    alert('Gagal memulai pairing: ' + err.message);
+                });
+            " class="space-y-4">
+                <p class="text-sm text-gray-600 mb-4">
+                    Klik tombol di bawah untuk mulai pairing. Nomor WhatsApp akan terdeteksi otomatis saat Anda scan QR code.
+                </p>
+                <button type="submit"
+                        class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors">
+                    📱 Mulai Pairing
+                </button>
+            </form>
+        </div>
+
+        <!-- QR Code Section -->
+        <div x-show="pairingState === 'pairing'"
+             x-init="
+                $watch('pairingState', value => {
+                    if (value === 'pairing' && tenantID) {
+                        // Refresh QR code every 30 seconds
+                        qrRefreshInterval = setInterval(() => {
+                            const qrImg = document.getElementById('qr-code-img');
+                            if (qrImg) {
+                                qrImg.src = '/api/admin/whatsapp/qr/' + tenantID + '?t=' + Date.now();
+                            }
+                        }, 30000);
+                    }
+                })
+             "
+             class="p-4 md:p-6">
+            <h3 class="text-md font-semibold text-gray-900 mb-4 text-center">Scan QR Code</h3>
+
+            <!-- QR Code Image -->
+            <div class="flex justify-center mb-6">
+                <div class="p-4 bg-white border-4 border-blue-500 rounded-lg shadow-lg">
+                    <img id="qr-code-img"
+                         :src="'/api/admin/whatsapp/qr/' + tenantID"
+                         alt="QR Code"
+                         class="w-64 h-64 md:w-80 md:h-80"
+                         @error="$el.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22256%22 height=%22256%22%3E%3Crect width=%22256%22 height=%22256%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239ca3af%22 font-size=%2216%22%3ELoading QR...%3C/text%3E%3C/svg%3E'">
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold text-blue-900 mb-2">📱 Cara Scan QR Code:</h4>
+                <ol class="space-y-2 text-sm text-blue-800">
+                    <li class="flex items-start">
+                        <span class="font-bold mr-2">1.</span>
+                        <span>Buka WhatsApp di HP Anda</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold mr-2">2.</span>
+                        <span>Tap Menu (⋮) → <strong>Linked Devices</strong></span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold mr-2">3.</span>
+                        <span>Tap <strong>"Link a Device"</strong></span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold mr-2">4.</span>
+                        <span>Scan QR code di layar ini</span>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Cancel Button -->
+            <div class="flex justify-center">
+                <button @click="
+                    clearInterval(timeoutInterval);
+                    clearInterval(statusPollInterval);
+                    clearInterval(qrRefreshInterval);
+                    pairingState = 'disconnected';
+                    timeoutSeconds = 120;
+                "
+                        class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">
+                    Batalkan
+                </button>
+            </div>
+        </div>
+
+        <!-- Connected View (Story 3.2 + 3.3) -->
+        <div x-show="pairingState === 'connected'"
+             x-init="
+                $watch('pairingState', value => {
+                    if (value === 'connected') {
+                        // Start slow polling for connection status (every 30 seconds)
+                        statusPollInterval = setInterval(() => {
+                            fetch('/api/admin/whatsapp/status', {
+                                headers: { 'X-Tenant-ID': '{{.TenantID}}' }
+                            })
+                            .then(r => r.json())
+                            .then(statusData => {
+                                if (!statusData.is_connected) {
+                                    clearInterval(statusPollInterval);
+                                    pairingState = 'disconnected';
+                                    alert('WhatsApp terputus. Silakan pairing ulang.');
+                                }
+                            });
+                        }, 30000);
+                    } else {
+                        if (statusPollInterval) {
+                            clearInterval(statusPollInterval);
+                        }
+                    }
+                });
+             "
+             class="p-4 md:p-6">
+
+            <!-- Connected Info -->
+            <div class="bg-green-50 rounded-lg p-4 mb-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-md font-semibold text-green-900 mb-1">WhatsApp Terhubung!</h3>
+                            <p class="text-sm text-green-700">Bot Anda siap menerima dan merespon pesan</p>
+                            <p class="text-xs text-green-600 mt-1">Terhubung sejak: <span x-text="new Date().toLocaleString('id-ID')"></span></p>
+                        </div>
+                    </div>
+                    <button @click="showDisconnectModal = true"
+                            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors">
+                        🔌 Disconnect
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Message Section (Story 3.3) -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+                <h3 class="text-md font-semibold text-gray-900 mb-2">Test WhatsApp Bot</h3>
+                <p class="text-sm text-gray-600 mb-4">Kirim pesan test untuk memverifikasi bot bekerja dengan baik</p>
+
+                <!-- Suggested Test Messages -->
+                <div class="mb-4">
+                    <p class="text-xs text-gray-500 mb-2">Contoh pesan test:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button @click="testMessage = 'Ada Toyota Avanza?'"
+                                class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-full transition-colors">
+                            "Ada Toyota Avanza?"
+                        </button>
+                        <button @click="testMessage = 'Mobil matic budget 150 juta?'"
+                                class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-full transition-colors">
+                            "Mobil matic budget 150 juta?"
+                        </button>
+                        <button @click="testMessage = 'Info detail mobil ID 5'"
+                                class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-full transition-colors">
+                            "Info detail mobil ID 5"
+                        </button>
+                    </div>
+                </div>
+
+                <form @submit.prevent="
+                    testSending = true;
+                    testResponse = null;
+
+                    fetch('/api/admin/whatsapp/test', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': '{{.TenantID}}'
+                        },
+                        body: JSON.stringify({ message: testMessage })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        testSending = false;
+                        testResponse = {
+                            success: true,
+                            message: 'Test message sent successfully!',
+                            details: data
+                        };
+                    })
+                    .catch(err => {
+                        testSending = false;
+                        testResponse = {
+                            success: false,
+                            message: 'Gagal mengirim test message: ' + err.message
+                        };
+                    });
+                " class="space-y-4">
+                    <div>
+                        <label for="test_message" class="block text-sm font-medium text-gray-700 mb-2">
+                            Pesan Test
+                        </label>
+                        <textarea id="test_message"
+                                  x-model="testMessage"
+                                  rows="3"
+                                  placeholder="Ketik pesan test, misal: Ada Toyota Avanza?"
+                                  class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+
+                    <button type="submit"
+                            :disabled="testSending || !testMessage"
+                            :class="testSending ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'"
+                            class="w-full md:w-auto px-6 py-2 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed">
+                        <span x-show="!testSending">📤 Send Test Message</span>
+                        <span x-show="testSending">⏳ Sending...</span>
+                    </button>
+                </form>
+
+                <!-- Test Response Area -->
+                <div x-show="testResponse" class="mt-4">
+                    <!-- Success Response -->
+                    <div x-show="testResponse && testResponse.success"
+                         class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-semibold text-green-900 mb-1">✅ Test message sent successfully!</h4>
+                                <p class="text-xs text-green-700">Message sent to bot</p>
+                                <p class="text-xs text-green-600 mt-1">Expected response: Check your WhatsApp for bot reply</p>
+                                <p class="text-xs text-gray-500 mt-2">Timestamp: <span x-text="new Date().toLocaleTimeString('id-ID')"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Response -->
+                    <div x-show="testResponse && !testResponse.success"
+                         class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-semibold text-red-900 mb-1">❌ Gagal mengirim test message</h4>
+                                <p class="text-xs text-red-700 font-mono" x-text="testResponse.message"></p>
+                                <button @click="testResponse = null"
+                                        class="mt-2 text-xs text-red-600 hover:text-red-800 underline">
+                                    Coba lagi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Penting:</strong> QR code akan expired setelah 2 menit. Jika timeout, klik "Batalkan" dan coba pairing ulang.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disconnect Confirmation Modal (Story 3.4) -->
+    <div x-show="showDisconnectModal"
+         x-cloak
+         @click.away="showDisconnectModal = false"
+         @keydown.escape.window="showDisconnectModal = false"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         style="display: none;">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
+        <!-- Modal Container -->
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <!-- Modal Content -->
+            <div @click.stop
+                 class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
+
+                <!-- Warning Icon -->
+                <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">
+                    Disconnect WhatsApp?
+                </h3>
+
+                <!-- Message -->
+                <p class="text-sm text-gray-600 text-center mb-6">
+                    Yakin ingin disconnect WhatsApp? Bot akan berhenti merespon pesan sampai Anda pairing ulang.
+                </p>
+
+                <!-- Error Message (if any) -->
+                <div x-show="disconnectError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-700" x-text="disconnectError"></p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3">
+                    <button @click="showDisconnectModal = false"
+                            :disabled="disconnecting"
+                            class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Batalkan
+                    </button>
+                    <button @click="
+                        disconnecting = true;
+                        disconnectError = null;
+
+                        fetch('/api/admin/whatsapp/disconnect', {
+                            method: 'POST',
+                            headers: { 'X-Tenant-ID': '{{.TenantID}}' }
+                        })
+                        .then(r => {
+                            if (!r.ok) throw new Error('Disconnect failed');
+                            return r.json();
+                        })
+                        .then(() => {
+                            disconnecting = false;
+                            showDisconnectModal = false;
+                            pairingState = 'disconnected';
+                            if (statusPollInterval) {
+                                clearInterval(statusPollInterval);
+                            }
+                            // Success notification
+                            alert('✅ WhatsApp berhasil di-disconnect');
+                        })
+                        .catch(err => {
+                            disconnecting = false;
+                            disconnectError = 'Gagal disconnect: ' + err.message;
+                        });
+                    "
+                            :disabled="disconnecting"
+                            class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!disconnecting">Ya, Disconnect</span>
+                        <span x-show="disconnecting">⏳ Disconnecting...</span>
+                    </button>
+                </div>
+
+                <!-- Close button (X) -->
+                <button @click="showDisconnectModal = false"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{{end}}

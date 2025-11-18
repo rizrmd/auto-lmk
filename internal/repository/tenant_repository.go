@@ -133,3 +133,54 @@ func (r *TenantRepository) List() ([]*model.Tenant, error) {
 
 	return tenants, nil
 }
+
+// UpdatePairingStatus updates the pairing_status field for a tenant
+// Valid status values: "unpaired", "pairing_pending", "paired", "disconnected", "failed"
+func (r *TenantRepository) UpdatePairingStatus(tenantID int, status string) error {
+	query := `
+		UPDATE tenants
+		SET pairing_status = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+
+	result, err := r.db.Exec(query, status, tenantID)
+	if err != nil {
+		return fmt.Errorf("failed to update pairing status: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("tenant not found with id %d", tenantID)
+	}
+
+	return nil
+}
+
+// UpdateWhatsAppNumber updates the whatsapp_number field for a tenant
+func (r *TenantRepository) UpdateWhatsAppNumber(tenantID int, phoneNumber string) error {
+	query := `
+		UPDATE tenants
+		SET whatsapp_number = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+
+	result, err := r.db.Exec(query, phoneNumber, tenantID)
+	if err != nil {
+		return fmt.Errorf("failed to update whatsapp number: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("tenant not found with id %d", tenantID)
+	}
+
+	return nil
+}

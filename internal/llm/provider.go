@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 )
 
 // Provider interface for LLM implementations
@@ -16,7 +18,7 @@ type Provider interface {
 
 // Message represents a chat message
 type Message struct {
-	Role    string `json:"role"`    // system, user, assistant
+	Role    string `json:"role"` // system, user, assistant
 	Content string `json:"content"`
 }
 
@@ -131,7 +133,7 @@ func NewZAIProvider(apiKey, model, endpoint string) (*ZAIProvider, error) {
 		model = "glm-4-flash" // Default to GLM-4-Flash
 	}
 	if endpoint == "" {
-		endpoint = "https://api.z.ai/api/coding/paas/v4"
+		endpoint = "https://api.z.ai/api/coding/paas/v4/chat/completions"
 	}
 	return &ZAIProvider{
 		apiKey:   apiKey,
@@ -143,10 +145,10 @@ func NewZAIProvider(apiKey, model, endpoint string) (*ZAIProvider, error) {
 
 // Z.AI API request/response structures
 type zaiRequest struct {
-	Model    string       `json:"model"`
-	Messages []Message    `json:"messages"`
-	Tools    []zaiTool    `json:"tools,omitempty"`
-	Stream   bool         `json:"stream"`
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+	Tools    []zaiTool `json:"tools,omitempty"`
+	Stream   bool      `json:"stream"`
 }
 
 type zaiTool struct {
@@ -216,22 +218,46 @@ func (p *ZAIProvider) Chat(ctx context.Context, messages []Message, functions []
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", "Bearer "+p.apiKey)
 
-	// Send request
-	resp, err := p.client.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
+	// Retry configuration
+	maxRetries := 3
+	var resp *http.Response
+	var body []byte
 
-	// Read response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
+	// Retry loop for DNS and network errors
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		// Send request
+		var err error
+		resp, err = p.client.Do(httpReq)
+		if err != nil {
+			// Check if it's a DNS or network error
+			if isRetryableError(err) && attempt < maxRetries {
+				// Exponential backoff: 2s, 4s
+				waitTime := time.Duration(attempt*2) * time.Second
+				time.Sleep(waitTime)
 
-	// Check status code
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Z.AI API error (status %d): %s", resp.StatusCode, string(body))
+				// Need to recreate the request body for retry
+				httpReq, _ = http.NewRequestWithContext(ctx, "POST", p.endpoint, bytes.NewReader(reqBody))
+				httpReq.Header.Set("Content-Type", "application/json")
+				httpReq.Header.Set("Authorization", "Bearer "+p.apiKey)
+				continue
+			}
+			return nil, fmt.Errorf("failed to send request after %d attempts: %w", attempt, err)
+		}
+
+		// Read response
+		body, err = io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response: %w", err)
+		}
+
+		// Check status code
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("Z.AI API error (status %d): %s", resp.StatusCode, string(body))
+		}
+
+		// Success! Break out of retry loop
+		break
 	}
 
 	// Parse response
@@ -273,4 +299,24 @@ func ParseFunctionArguments(jsonStr string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to parse function arguments: %w", err)
 	}
 	return args, nil
+}
+
+// isRetryableError checks if an error is DNS or network related and should be retried
+func isRetryableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errStr := err.Error()
+	// DNS errors
+	if strings.Contains(errStr, "lookup") ||
+		strings.Contains(errStr, "no such host") ||
+		strings.Contains(errStr, "server misbehaving") ||
+		// Network errors
+		strings.Contains(errStr, "connection refused") ||
+		strings.Contains(errStr, "connection reset") ||
+		strings.Contains(errStr, "timeout") ||
+		strings.Contains(errStr, "temporary failure") {
+		return true
+	}
+	return false
 }

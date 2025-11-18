@@ -1,0 +1,170 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1</storyId>
+    <title>Implement Sales Handler with CRUD Endpoints</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-15</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/1-1-implement-sales-handler-with-crud-endpoints.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer</asA>
+    <iWant>create sales_handler.go with Create, List, Delete endpoints</iWant>
+    <soThat>tenant admins can manage sales team members via API</soThat>
+    <tasks>- [ ] Implement sales_handler.go with Create method
+  - [ ] Add POST /api/sales endpoint
+  - [ ] Extract tenant ID from context
+  - [ ] Validate phone number format (E.164 or Indonesia local)
+  - [ ] Check for duplicate phone numbers within tenant
+  - [ ] Call sales repository Create method
+  - [ ] Return 201 Created with sales data
+  - [ ] Handle validation errors with 400 Bad Request
+  - [ ] Handle duplicate errors with 409 Conflict
+  - [ ] Return error messages in Bahasa Indonesia
+- [ ] Implement sales_handler.go with List method
+  - [ ] Add GET /api/sales endpoint
+  - [ ] Extract tenant ID from context
+  - [ ] Call sales repository List method
+  - [ ] Return 200 OK with sales array
+  - [ ] Handle database errors with 500 Internal Server Error
+- [ ] Implement sales_handler.go with Delete method
+  - [ ] Add DELETE /api/sales/{id} endpoint
+  - [ ] Extract tenant ID from context
+  - [ ] Extract sales ID from URL parameter
+  - [ ] Call sales repository Delete method
+  - [ ] Return 204 No Content on success
+  - [ ] Return 404 Not Found if sales member not found or wrong tenant
+  - [ ] Handle database errors with 500 Internal Server Error
+- [ ] Wire up sales handler in main.go
+  - [ ] Uncomment sales routes in cmd/api/main.go (lines 224-228)
+  - [ ] Initialize sales handler with repository
+  - [ ] Add routes to router with proper middleware
+- [ ] Add unit tests for sales handler
+  - [ ] Test Create endpoint with valid data
+  - [ ] Test Create endpoint with invalid phone format
+  - [ ] Test Create endpoint with duplicate phone
+  - [ ] Test List endpoint returns tenant's sales only
+  - [ ] Test Delete endpoint with valid ID
+  - [ ] Test Delete endpoint with non-existent ID
+  - [ ] Test Delete endpoint with wrong tenant ID
+- [ ] Add integration tests for sales API
+  - [ ] Test complete CRUD flow
+  - [ ] Test tenant isolation (sales from tenant A not visible to tenant B)
+  - [ ] Test error responses in Bahasa Indonesia</tasks>
+  </story>
+
+  <acceptanceCriteria>1. Given the sales repository already exists at `internal/repository/sales_repository.go`
+2. When I implement `internal/handler/sales_handler.go`
+3. Then the handler exposes three endpoints:
+   - `POST /api/sales` - Create sales member with phone_number, name, role
+   - `GET /api/sales` - List all sales members for current tenant
+   - `DELETE /api/sales/{id}` - Delete sales member by ID
+4. And all endpoints use `model.GetTenantID(r.Context())` for tenant isolation
+5. And POST endpoint validates phone number format (E.164 or local Indonesia format)
+6. And POST endpoint checks for duplicate phone numbers within tenant
+7. And DELETE endpoint returns 404 if sales member not found or belongs to different tenant
+8. And all responses return proper JSON with appropriate HTTP status codes (201, 200, 204, 400, 404, 500)
+9. And error messages are in Bahasa Indonesia</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+  <artifact>
+    <path>docs/architecture.md</path>
+    <title>Architecture - Auto LMK Admin Tenant Management</title>
+    <section>Handler Structure (MANDATORY for ALL handlers)</section>
+    <snippet>The mandatory handler structure for all handlers: type XxxHandler struct { repo *repository.XxxRepository }, NewXxxHandler, Create method with tenant extraction, validation, repository call, JSON response.</snippet>
+  </artifact>
+  <artifact>
+    <path>docs/architecture.md</path>
+    <title>Architecture - Auto LMK Admin Tenant Management</title>
+    <section>Tenant Isolation (CRITICAL)</section>
+    <snippet>Enforcement Points: Middleware extracts tenant from domain, Context injects tenant ID, Handler MUST call model.GetTenantID(r.Context()), Repository MUST filter by tenant_id in ALL queries, File Storage MUST use {tenant_id} in path.</snippet>
+  </artifact>
+  <artifact>
+    <path>docs/epics.md</path>
+    <title>auto-lmk - Epic Breakdown</title>
+    <section>Epic 1: Sales Team Management</section>
+    <snippet>Goal: Enable tenant admins to manage sales team members who have special privileges in WhatsApp bot. FRs: FR-1.1 Add Sales Team Member, FR-1.2 List Sales Team Members, FR-1.3 Delete Sales Team Member.</snippet>
+  </artifact>
+</docs>
+    <code>
+  <artifact>
+    <path>internal/repository/sales_repository.go</path>
+    <kind>repository</kind>
+    <symbol>Create, List, Delete, IsSales</symbol>
+    <lines>various</lines>
+    <reason>Existing sales CRUD methods to reuse for handler implementation</reason>
+  </artifact>
+  <artifact>
+    <path>internal/handler/car_handler.go</path>
+    <kind>handler</kind>
+    <symbol>Create method</symbol>
+    <lines>45-67</lines>
+    <reason>Reference pattern for implementing sales handler with tenant isolation and validation</reason>
+  </artifact>
+  <artifact>
+    <path>internal/model/tenant.go</path>
+    <kind>model</kind>
+    <symbol>GetTenantID</symbol>
+    <lines>various</lines>
+    <reason>Function to extract tenant ID from request context for isolation</reason>
+  </artifact>
+</code>
+    <dependencies>
+  <ecosystem name="go">
+    <package name="github.com/go-chi/chi/v5" version="v5.2.3" />
+    <package name="github.com/lib/pq" version="v1.10.9" />
+    <package name="github.com/golang-migrate/migrate/v4" version="v4.17.0" />
+  </ecosystem>
+</dependencies>
+  </artifacts>
+
+  <constraints>
+  <constraint>Clean Architecture pattern: Handler → Repository → Database</constraint>
+  <constraint>Tenant isolation: All database queries must filter by tenant_id from context</constraint>
+  <constraint>Phone validation: Regex ^\+?[1-9]\d{1,14}$ or ^08\d{8,11}$</constraint>
+  <constraint>Error messages in Bahasa Indonesia</constraint>
+  <constraint>Handler structure: Mandatory pattern with tenant extraction first</constraint>
+  <constraint>API responses: JSON with proper HTTP status codes</constraint>
+</constraints>
+  <interfaces>
+  <interface>
+    <name>Sales CRUD API</name>
+    <kind>REST endpoints</kind>
+    <signature>POST /api/sales - Create sales member</signature>
+    <path>internal/handler/sales_handler.go</path>
+  </interface>
+  <interface>
+    <name>Sales CRUD API</name>
+    <kind>REST endpoints</kind>
+    <signature>GET /api/sales - List sales members</signature>
+    <path>internal/handler/sales_handler.go</path>
+  </interface>
+  <interface>
+    <name>Sales CRUD API</name>
+    <kind>REST endpoints</kind>
+    <signature>DELETE /api/sales/{id} - Delete sales member</signature>
+    <path>internal/handler/sales_handler.go</path>
+  </interface>
+</interfaces>
+  <tests>
+    <standards>
+  <standard>Unit tests for handler methods using Go testing package</standard>
+  <standard>Integration tests for API endpoints with real database</standard>
+  <standard>Tenant isolation verification in all tests</standard>
+  <standard>Error response validation in Bahasa Indonesia</standard>
+</standards>
+    <locations>
+  <location>internal/handler/sales_handler_test.go</location>
+  <location>tests/integration/sales_api_test.go</location>
+</locations>
+    <ideas>
+  <idea>Test Create endpoint with valid Indonesian phone number format</idea>
+  <idea>Test tenant isolation by creating sales in different tenant contexts</idea>
+  <idea>Test duplicate phone number rejection with proper error message</idea>
+  <idea>Test CRUD flow end-to-end with database verification</idea>
+</ideas>
+  </tests>
+</story-context>

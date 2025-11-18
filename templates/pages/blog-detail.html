@@ -1,0 +1,902 @@
+{{define "head"}}
+<!-- Basecoat UI -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/basecoat.cdn.min.css">
+<script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/js/all.min.js" defer></script>
+
+<!-- HTMX -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<!-- Alpine.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- Enhanced Blog Post SEO Meta Tags -->
+<meta id="blog-title" name="blog-title" content="">
+<meta id="blog-description" name="description" content="">
+<meta id="blog-keywords" name="keywords" content="">
+
+<!-- Canonical URL -->
+<link id="canonical-url" rel="canonical" href="" />
+
+<!-- Author Meta -->
+<meta id="blog-author" name="author" content="{{.TenantName}}">
+<meta id="blog-robots" name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta id="blog-language" name="language" content="id-ID">
+
+<!-- Advanced SEO Meta Tags -->
+<meta id="reading-time" name="reading-time" content="">
+<meta id="word-count" name="word-count" content="">
+<meta id="difficulty-level" name="difficulty" content="">
+<meta id="article-category" name="article:category" content="Otomotif">
+<meta id="content-length" name="content-length" content="">
+
+<!-- Enhanced Open Graph Meta Tags -->
+<meta id="og-title" property="og:title" content="">
+<meta id="og-description" property="og:description" content="">
+<meta id="og-type" property="og:type" content="article">
+<meta id="og-url" property="og:url" content="">
+<meta id="og-image" property="og:image" content="">
+<meta id="og-site-name" property="og:site_name" content="{{.TenantName}}">
+<meta id="og-locale" property="og:locale" content="id_ID">
+<meta id="og-image-width" property="og:image:width" content="1200">
+<meta id="og-image-height" property="og:image:height" content="630">
+
+<!-- Enhanced Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta id="twitter-title" name="twitter:title" content="">
+<meta id="twitter-description" name="twitter:description" content="">
+<meta id="twitter-image" name="twitter:image" content="">
+<meta id="twitter-site" name="twitter:site" content="@{{.TwitterHandle | default "autolmk"}}">
+
+<!-- Article Meta Tags -->
+<meta id="article-published-time" property="article:published_time" content="">
+<meta id="article-modified-time" property="article:modified_time" content="">
+<meta id="article-author" property="article:author" content="{{.TenantName}}">
+<meta id="article-section" property="article:section" content="Otomotif">
+<meta id="article-tag" property="article:tag" content="mobil bekas, tips otomotif, panduan mobil">
+
+<!-- Advanced Structured Data (JSON-LD) with Enhanced Author Schema -->
+<script id="article-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "",
+  "description": "",
+  "image": "",
+  "datePublished": "",
+  "dateModified": "",
+  "author": {
+    "@type": "Organization",
+    "name": "{{.TenantName}}",
+    "url": "{{.BaseURL}}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{.LogoPath}}",
+      "width": 300,
+      "height": 60
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "{{.PhoneNumber | default ""}}",
+      "contactType": "customer service",
+      "availableLanguage": ["Indonesian"],
+      "areaServed": ["ID"]
+    },
+    "sameAs": [
+      "{{.Website | default ""}}",
+      "https://www.facebook.com/{{.FacebookHandle | default ""}}",
+      "https://www.instagram.com/{{.InstagramHandle | default ""}}"
+    ]
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{.TenantName}}",
+    "url": "{{.BaseURL}}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{.LogoPath}}",
+      "width": 300,
+      "height": 60
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "{{.PhoneNumber | default ""}}",
+      "contactType": "sales",
+      "availableLanguage": ["Indonesian"]
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "ID",
+      "addressLocality": "{{.City | default ""}}"
+    },
+    "openingHours": "Mo-Su 08:00-21:00"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": ""
+  }
+}
+</script>
+
+<!-- Enhanced Organization Schema -->
+<script id="organization-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutomotiveBusiness",
+  "name": "{{.TenantName}}",
+  "description": "Showroom mobil bekas terpercaya dengan berbagai pilihan mobil berkualitas dan layanan terbaik",
+  "url": "{{.BaseURL}}",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "{{.LogoPath}}",
+    "width": 300,
+    "height": 60
+  },
+  "image": "{{.LogoPath}}",
+  "telephone": "{{.PhoneNumber | default ""}}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{.Address | default ""}}",
+    "addressLocality": "{{.City | default ""}}",
+    "addressRegion": "{{.Province | default ""}}",
+    "postalCode": "{{.PostalCode | default ""}}",
+    "addressCountry": "ID"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "{{.Latitude | default ""}}",
+    "longitude": "{{.Longitude | default ""}}"
+  },
+  "openingHours": "Mo-Su 08:00-21:00",
+  "priceRange": "Rp100.000.000 - Rp1.000.000.000",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Mobil Bekas",
+    "itemListElement": []
+  },
+  "sameAs": [
+    "{{.Website | default ""}}",
+    "https://www.facebook.com/{{.FacebookHandle | default ""}}",
+    "https://www.instagram.com/{{.InstagramHandle | default ""}}",
+    "https://wa.me/{{.WhatsAppNumber | default ""}}"
+  ],
+  "makesOffer": {
+    "@type": "AggregateOffer",
+    "priceCurrency": "IDR",
+    "lowPrice": "100000000",
+    "highPrice": "1000000000",
+    "offerCount": 50,
+    "itemOffered": {
+      "@type": "Product",
+      "category": "Mobil Bekas"
+    }
+  },
+  "areaServed": {
+    "@type": "AdministrativeArea",
+    "name": "{{.ServiceArea | default "Indonesia"}}"
+  }
+}
+</script>
+
+<!-- Car Inventory Schema Integration -->
+<script id="car-inventory-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoDealer",
+  "name": "{{.TenantName}} - Mobil Bekas",
+  "url": "{{.BaseURL}}/cars",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Mobil Bekas Tersedia",
+    "numberOfItems": 0,
+    "itemListElement": []
+  },
+  "sells": {
+    "@type": "Product",
+    "category": "Mobil Bekas",
+    "brand": ["Toyota", "Honda", "Mitsubishi", "Suzuki", "Daihatsu", "Nissan"]
+  },
+  "makesOffer": []
+}
+</script>
+
+<!-- FAQ Schema (dynamically added if FAQ content detected) -->
+<script id="faq-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": []
+}
+</script>
+
+<!-- WebPage Schema for SEO -->
+<script id="webpage-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "",
+  "description": "",
+  "url": "",
+  "inLanguage": "id-ID",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "{{.TenantName}}",
+    "url": "{{.BaseURL}}"
+  },
+  "primaryImageOfPage": {
+    "@type": "ImageObject",
+    "url": ""
+  },
+  "dateModified": ""
+}
+</script>
+
+<!-- Car Schema Integration (for articles mentioning cars) -->
+<script id="car-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "numberOfItems": 0,
+  "itemListElement": []
+}
+</script>
+{{end}}
+
+{{define "content"}}
+<article id="blog-post" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+         hx-get="/api/admin/blog?slug={{.Slug}}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+    <!-- Loading State -->
+    <div class="text-center py-12">
+        <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-gray-600">Memuat artikel...</p>
+    </div>
+</article>
+
+<script>
+    // Advanced SEO Analysis Functions
+    function calculateReadingTime(content) {
+        const wordsPerMinute = 200; // Average reading speed for Indonesian
+        const wordCount = content.trim().split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        return { readingTime, wordCount };
+    }
+
+    function determineDifficultyLevel(content, wordCount) {
+        const sentences = content.split(/[.!?]+/).length;
+        const avgWordsPerSentence = wordCount / sentences;
+
+        if (avgWordsPerSentence < 10 && wordCount < 500) {
+            return "Pemula";
+        } else if (avgWordsPerSentence < 15 && wordCount < 1000) {
+            return "Menengah";
+        } else {
+            return "Lanjutan";
+        }
+    }
+
+    function extractFAQs(content) {
+        const faqSection = content.match(/\n(?:FAQ|Pertanyaan yang Sering Diajukan|Pertanyaan Umum)[:\s]*\n([\s\S]*?)(?=\n\n|\n[A-Z]|\n#|$)/i);
+        if (!faqSection) return [];
+
+        const faqs = [];
+        const faqContent = faqSection[1];
+        const questions = faqContent.match(/\n[Qq][:\.\s]*\s*([^?\n]+[?\n]?)/g) || [];
+
+        questions.forEach(q => {
+            const cleanQuestion = q.replace(/^\s*[Qq][:\.\s]*\s*/, '').trim();
+            if (cleanQuestion) {
+                const answerMatch = faqContent.match(new RegExp(cleanQuestion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s]*([\\s\\S]*?)(?=\\n[Qq][:\\.]|\\n\\n|$)', 'i'));
+                const answer = answerMatch ? answerMatch[1].replace(/^\s*[Aa][:\.\s]*\s*/, '').trim().substring(0, 500) : '';
+
+                if (answer) {
+                    faqs.push({
+                        question: cleanQuestion,
+                        answer: answer
+                    });
+                }
+            }
+        });
+
+        return faqs;
+    }
+
+    function extractCarMentions(content) {
+        const carKeywords = [
+            'Toyota', 'Honda', 'Mitsubishi', 'Suzuki', 'Daihatsu', 'Nissan', 'Mazda', 'Hyundai', 'Kia',
+            'Avanza', 'Xenia', 'Jazz', 'Yaris', 'Civic', 'Brio', 'Mobilio', 'Ertiga', 'Xpander', 'Pajero Sport',
+            'Fortuner', 'CR-V', 'HR-V', 'Alphard', 'Vellfire', 'Camry', 'Corolla', 'Innova', 'Rush', 'Terios'
+        ];
+
+        const mentionedCars = [];
+        carKeywords.forEach(car => {
+            const regex = new RegExp(`\\b${car}\\b`, 'gi');
+            if (content.match(regex)) {
+                mentionedCars.push(car);
+            }
+        });
+
+        return [...new Set(mentionedCars)]; // Remove duplicates
+    }
+
+    function updateSEOMeta(post) {
+        const currentUrl = window.location.href;
+        const siteName = '{{.TenantName}}';
+        const defaultImage = `${window.location.origin}/static/img/logo.png`;
+        const publishedDate = post.published_at || post.created_at;
+        const description = post.excerpt || post.content.substring(0, 160);
+
+        // Advanced SEO Analysis
+        const { readingTime, wordCount } = calculateReadingTime(post.content);
+        const difficultyLevel = determineDifficultyLevel(post.content, wordCount);
+        const faqs = extractFAQs(post.content);
+        const mentionedCars = extractCarMentions(post.content);
+
+        // Generate keywords from title and content
+        const keywords = ['blog', 'artikel', 'otomotif', 'mobil bekas', 'tips mobil', 'panduan mobil'];
+        const titleWords = post.title.toLowerCase().split(' ').filter(word => word.length > 3);
+        keywords.push(...titleWords.slice(0, 5));
+
+        // Add mentioned cars to keywords
+        mentionedCars.forEach(car => keywords.push(car));
+
+        const finalKeywords = [...new Set(keywords)].join(', ');
+
+        // Update document title
+        document.title = `${post.title} | Blog ${siteName}`;
+
+        // Update canonical URL
+        const canonicalElement = document.getElementById('canonical-url');
+        if (canonicalElement) {
+            canonicalElement.setAttribute('href', currentUrl);
+        }
+
+        // Update basic meta tags
+        const blogTitleElement = document.getElementById('blog-title');
+        if (blogTitleElement) blogTitleElement.setAttribute('content', post.title);
+
+        const blogDescElement = document.getElementById('blog-description');
+        if (blogDescElement) blogDescElement.setAttribute('content', description);
+
+        const blogKeywordsElement = document.getElementById('blog-keywords');
+        if (blogKeywordsElement) blogKeywordsElement.setAttribute('content', finalKeywords);
+
+        // Update Advanced SEO Meta Tags
+        const readingTimeElement = document.getElementById('reading-time');
+        if (readingTimeElement) readingTimeElement.setAttribute('content', `${readingTime} menit`);
+
+        const wordCountElement = document.getElementById('word-count');
+        if (wordCountElement) wordCountElement.setAttribute('content', wordCount);
+
+        const difficultyElement = document.getElementById('difficulty-level');
+        if (difficultyElement) difficultyElement.setAttribute('content', difficultyLevel);
+
+        const contentLengthElement = document.getElementById('content-length');
+        if (contentLengthElement) contentLengthElement.setAttribute('content', wordCount);
+
+        // Update Open Graph meta tags
+        const ogTitleElement = document.getElementById('og-title');
+        if (ogTitleElement) ogTitleElement.setAttribute('content', post.title);
+
+        const ogDescElement = document.getElementById('og-description');
+        if (ogDescElement) ogDescElement.setAttribute('content', description);
+
+        const ogUrlElement = document.getElementById('og-url');
+        if (ogUrlElement) ogUrlElement.setAttribute('content', currentUrl);
+
+        const ogImageElement = document.getElementById('og-image');
+        if (ogImageElement) ogImageElement.setAttribute('content', defaultImage);
+
+        // Update Twitter Card meta tags
+        const twitterTitleElement = document.getElementById('twitter-title');
+        if (twitterTitleElement) twitterTitleElement.setAttribute('content', post.title);
+
+        const twitterDescElement = document.getElementById('twitter-description');
+        if (twitterDescElement) twitterDescElement.setAttribute('content', description);
+
+        const twitterImageElement = document.getElementById('twitter-image');
+        if (twitterImageElement) twitterImageElement.setAttribute('content', defaultImage);
+
+        // Update Article meta tags
+        const articlePublishedElement = document.getElementById('article-published-time');
+        if (articlePublishedElement) articlePublishedElement.setAttribute('content', publishedDate);
+
+        const articleModifiedElement = document.getElementById('article-modified-time');
+        if (articleModifiedElement) {
+            articleModifiedElement.setAttribute('content', post.updated_at || publishedDate);
+        }
+
+        // Enhanced Article Schema with advanced properties
+        const schemaScript = document.getElementById('article-schema');
+        if (schemaScript) {
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "Article",
+                "headline": post.title,
+                "description": description,
+                "image": defaultImage,
+                "datePublished": publishedDate,
+                "dateModified": post.updated_at || publishedDate,
+                "author": {
+                    "@type": "Organization",
+                    "name": siteName,
+                    "url": "{{.BaseURL}}"
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": siteName,
+                    "url": "{{.BaseURL}}",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": defaultImage,
+                        "width": 300,
+                        "height": 60
+                    }
+                },
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": currentUrl
+                },
+                "keywords": finalKeywords,
+                "articleSection": "Otomotif",
+                "inLanguage": "id-ID",
+                "isAccessibleForFree": true,
+                "wordCount": wordCount,
+                "timeRequired": `PT${readingTime}M`,
+                "educationalUse": "instruction",
+                "learningResourceType": "article",
+                "audience": {
+                    "@type": "EducationalAudience",
+                    "educationalRole": "student"
+                },
+                "about": [
+                    {
+                        "@type": "Thing",
+                        "name": "Otomotif"
+                    },
+                    ...mentionedCars.map(car => ({
+                        "@type": "Thing",
+                        "name": car
+                    }))
+                ]
+            };
+            schemaScript.textContent = JSON.stringify(schema, null, 2);
+        }
+
+        // Update WebPage Schema
+        const webpageSchemaScript = document.getElementById('webpage-schema');
+        if (webpageSchemaScript) {
+            const webpageSchema = {
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": post.title,
+                "description": description,
+                "url": currentUrl,
+                "inLanguage": "id-ID",
+                "isPartOf": {
+                    "@type": "WebSite",
+                    "name": "{{.TenantName}}",
+                    "url": "{{.BaseURL}}"
+                },
+                "primaryImageOfPage": {
+                    "@type": "ImageObject",
+                    "url": defaultImage
+                },
+                "dateModified": post.updated_at || publishedDate,
+                "lastReviewed": publishedDate,
+                "reviewedBy": {
+                    "@type": "Organization",
+                    "name": "{{.TenantName}}"
+                }
+            };
+            webpageSchemaScript.textContent = JSON.stringify(webpageSchema, null, 2);
+        }
+
+        // Update FAQ Schema if FAQs found
+        const faqSchemaScript = document.getElementById('faq-schema');
+        if (faqSchemaScript && faqs.length > 0) {
+            const faqSchema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqs.map(faq => ({
+                    "@type": "Question",
+                    "name": faq.question,
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": faq.answer
+                    }
+                }))
+            };
+            faqSchemaScript.textContent = JSON.stringify(faqSchema, null, 2);
+        }
+
+        // Update Car Schema if cars mentioned
+        const carSchemaScript = document.getElementById('car-schema');
+        if (carSchemaScript && mentionedCars.length > 0) {
+            const carSchema = {
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "numberOfItems": mentionedCars.length,
+                "itemListElement": mentionedCars.map((car, index) => ({
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "item": {
+                        "@type": "Car",
+                        "name": car,
+                        "brand": car.split(' ')[0],
+                        "category": "Mobil Bekas",
+                        "offers": {
+                            "@type": "Offer",
+                            "url": `${window.location.origin}/cars?search=${encodeURIComponent(car)}`,
+                            "seller": {
+                                "@type": "Organization",
+                                "name": siteName
+                            }
+                        }
+                    }
+                })),
+                "description": `Mobil yang disebutkan dalam artikel: ${mentionedCars.join(', ')}`
+            };
+            carSchemaScript.textContent = JSON.stringify(carSchema, null, 2);
+        }
+
+        // Update Car Inventory Schema with mentioned cars
+        const carInventorySchemaScript = document.getElementById('car-inventory-schema');
+        if (carInventorySchemaScript && mentionedCars.length > 0) {
+            try {
+                const carInventorySchema = JSON.parse(carInventorySchemaScript.textContent);
+
+                // Update makesOffer with mentioned cars
+                carInventorySchema.makesOffer = mentionedCars.map(car => ({
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Car",
+                        "name": car,
+                        "brand": car.split(' ')[0],
+                        "category": "Mobil Bekas"
+                    },
+                    "url": `${window.location.origin}/cars?search=${encodeURIComponent(car)}`,
+                    "seller": {
+                        "@type": "Organization",
+                        "name": siteName,
+                        "url": "{{.BaseURL}}"
+                    },
+                    "priceCurrency": "IDR"
+                }));
+
+                // Update hasOfferCatalog
+                carInventorySchema.hasOfferCatalog.itemListElement = mentionedCars.map((car, index) => ({
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "item": {
+                        "@type": "Car",
+                        "name": car,
+                        "brand": car.split(' ')[0],
+                        "category": "Mobil Bekas",
+                        "url": `${window.location.origin}/cars?search=${encodeURIComponent(car)}`
+                    }
+                }));
+
+                carInventorySchemaScript.textContent = JSON.stringify(carInventorySchema, null, 2);
+            } catch (error) {
+                console.error('Error updating car inventory schema:', error);
+            }
+        }
+
+        // Add JSON-LD BreadcrumbList
+        const breadcrumbSchema = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "{{.BaseURL}}/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Blog",
+                    "item": "{{.BaseURL}}/blog"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": post.title,
+                    "item": currentUrl
+                }
+            ]
+        };
+
+        // Add breadcrumb script if not exists
+        let breadcrumbScript = document.getElementById('breadcrumb-schema');
+        if (!breadcrumbScript) {
+            breadcrumbScript = document.createElement('script');
+            breadcrumbScript.id = 'breadcrumb-schema';
+            breadcrumbScript.type = 'application/ld+json';
+            document.head.appendChild(breadcrumbScript);
+        }
+        breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema, null, 2);
+
+        // Return advanced SEO data for UI display
+        return {
+            readingTime,
+            wordCount,
+            difficultyLevel,
+            faqs,
+            mentionedCars,
+            finalKeywords
+        };
+    }
+
+    htmx.on('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'blog-post') {
+            try {
+                const response = JSON.parse(evt.detail.xhr.response);
+                const post = Array.isArray(response) ? response[0] : response;
+
+                if (!post) {
+                    evt.detail.target.innerHTML = `
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Artikel Tidak Ditemukan</h2>
+                            <p class="text-gray-600 mb-6">Maaf, artikel yang Anda cari tidak ditemukan.</p>
+                            <a href="/blog" class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                Kembali ke Blog
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Update SEO meta tags and get advanced data
+                const seoData = updateSEOMeta(post);
+
+                const publishedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }) : '';
+
+                // Enhanced content processing with car mention linking
+                let contentHtml = post.content
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-gray-900 mt-6 mb-3">$1</h3>')
+                    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">$1</h2>')
+                    .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold text-gray-900 mt-8 mb-4">$1</h1>');
+
+                // Auto-link car mentions to car search pages
+                seoData.mentionedCars.forEach(car => {
+                    const regex = new RegExp(`\\b${car}\\b`, 'gi');
+                    contentHtml = contentHtml.replace(regex, `<a href="/cars?search=${encodeURIComponent(car)}" class="text-blue-600 hover:text-blue-800 font-semibold underline decoration-dotted decoration-2 hover:decoration-solid">${car}</a>`);
+                });
+
+                // Generate related articles (mock data for now)
+                const relatedArticles = `
+                    <div class="mt-12 p-6 bg-gray-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Artikel Terkait</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded shadow">
+                                <h4 class="font-semibold text-gray-900 mb-2">Tips Memilih Mobil Bekas</h4>
+                                <p class="text-sm text-gray-600 mb-2">Panduan lengkap memeriksa mobil bekas berkualitas.</p>
+                                <a href="/blog/tips-memilih-mobil-bekas" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Baca →</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h4 class="font-semibold text-gray-900 mb-2">Perawatan Mesin Diesel</h4>
+                                <p class="text-sm text-gray-600 mb-2">Cara merawat mesin diesel agar awet dan efisien.</p>
+                                <a href="/blog/perawatan-mesin-diesel" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Baca →</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h4 class="font-semibold text-gray-900 mb-2">Test Drive yang Efektif</h4>
+                                <p class="text-sm text-gray-600 mb-2">Langkah penting saat test drive mobil bekas.</p>
+                                <a href="/blog/test-drive-efektif" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Baca →</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Generate related cars section
+                const relatedCarsSection = seoData.mentionedCars.length > 0 ? `
+                    <div class="mt-12 p-6 bg-blue-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">🚗 Mobil yang Disebutkan</h3>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${seoData.mentionedCars.map(car => `
+                                <a href="/cars?search=${encodeURIComponent(car)}" class="inline-flex items-center px-3 py-1 bg-white text-blue-600 border border-blue-200 rounded-full text-sm hover:bg-blue-100">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    ${car}
+                                </a>
+                            `).join('')}
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Klik pada mobil untuk melihat stok tersedia di showroom kami.</p>
+                        <a href="/cars" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                            Lihat Semua Mobil
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                ` : '';
+
+                // Generate FAQ section if FAQs found
+                const faqSection = seoData.faqs.length > 0 ? `
+                    <div class="mt-12 p-6 bg-amber-50 rounded-lg">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">❓ Pertanyaan yang Sering Diajukan</h3>
+                        <div class="space-y-4">
+                            ${seoData.faqs.map(faq => `
+                                <details class="bg-white p-4 rounded shadow cursor-pointer">
+                                    <summary class="font-semibold text-gray-900 hover:text-blue-600">${faq.question}</summary>
+                                    <p class="mt-2 text-gray-700">${faq.answer}</p>
+                                </details>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                // Enhanced social sharing with structured data
+                const socialSharing = `
+                    <div class="mt-12 pt-8 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Bagikan Artikel</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}"
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                                Facebook
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title + ' - ' + seoData.difficultyLevel + ' level | ' + seoData.readingTime + ' menit baca')}"
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                </svg>
+                                Twitter
+                            </a>
+                            <a href="https://wa.me/?text=${encodeURIComponent(post.title + ' - ' + window.location.href)}"
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                </svg>
+                                WhatsApp
+                            </a>
+                            <a href="mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(post.title + ' - ' + window.location.href)}"
+                               class="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                Email
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                evt.detail.target.innerHTML = `
+                    <!-- Breadcrumb -->
+                    <nav class="mb-8 text-sm">
+                        <ol class="flex items-center space-x-2 text-gray-500" itemscope itemtype="https://schema.org/BreadcrumbList">
+                            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                                <a href="/" itemprop="item" class="hover:text-blue-600">
+                                    <span itemprop="name">Home</span>
+                                </a>
+                                <meta itemprop="position" content="1" />
+                            </li>
+                            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></li>
+                            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                                <a href="/blog" itemprop="item" class="hover:text-blue-600">
+                                    <span itemprop="name">Blog</span>
+                                </a>
+                                <meta itemprop="position" content="2" />
+                            </li>
+                            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></li>
+                            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                                <span itemprop="name" class="text-gray-900 font-medium truncate max-w-xs">${post.title}</span>
+                                <meta itemprop="position" content="3" />
+                            </li>
+                        </ol>
+                    </nav>
+
+                    <!-- Article Header with SEO Info -->
+                    <header class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                            ${post.title}
+                        </h1>
+
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <time datetime="${post.published_at}">${publishedDate}</time>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>${seoData.readingTime} menit baca</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>${seoData.wordCount} kata</span>
+                            </div>
+                            <div class="flex items-center px-2 py-1 bg-amber-100 text-amber-800 rounded-full">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <span>${seoData.difficultyLevel}</span>
+                            </div>
+                        </div>
+
+                        ${post.excerpt ? `
+                        <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                            <p class="text-gray-700 italic">${post.excerpt}</p>
+                        </div>
+                        ` : ''}
+                    </header>
+
+                    <!-- Article Content -->
+                    <article class="prose prose-lg max-w-none">
+                        <div class="text-gray-800 leading-relaxed space-y-4">
+                            ${contentHtml}
+                        </div>
+                    </article>
+
+                    <!-- FAQ Section -->
+                    ${faqSection}
+
+                    <!-- Related Cars Section -->
+                    ${relatedCarsSection}
+
+                    <!-- Related Articles -->
+                    ${relatedArticles}
+
+                    <!-- Enhanced Social Sharing -->
+                    ${socialSharing}
+
+                    <!-- Article Tags -->
+                    <div class="mt-8 pt-8 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tag</h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${seoData.finalKeywords.split(',').map(tag => `
+                                <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                                    ${tag.trim()}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Back to Blog -->
+                    <div class="mt-12">
+                        <a href="/blog" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Kembali ke Blog
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error parsing blog post:', error);
+                evt.detail.target.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-red-600">Gagal memuat artikel. Silakan coba lagi nanti.</p>
+                    </div>
+                `;
+            }
+        }
+    });
+</script>
+{{end}}

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -78,7 +80,7 @@ func Load() (*Config, error) {
 			SessionPath: getEnv("WHATSAPP_SESSION_PATH", "./whatsapp_sessions"),
 		},
 		Security: SecurityConfig{
-			JWTSecret: getEnv("JWT_SECRET", "change-this-in-production"),
+			JWTSecret: getSecureJWTSecret(),
 		},
 	}
 
@@ -103,4 +105,23 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// getSecureJWTSecret generates or retrieves a secure JWT secret
+func getSecureJWTSecret() string {
+	if value := os.Getenv("JWT_SECRET"); value != "" {
+		// Validate that the provided secret is not the default placeholder
+		if value != "change-this-in-production" && len(value) >= 32 {
+			return value
+		}
+	}
+
+	// Generate a secure random secret
+	randomSecret := make([]byte, 64)
+	if _, err := rand.Read(randomSecret); err != nil {
+		// Fallback to a hardcoded secure secret (still better than the default)
+		return "auto-generated-secure-secret-for-development-only-please-change-in-production"
+	}
+
+	return base64.StdEncoding.EncodeToString(randomSecret)
 }
