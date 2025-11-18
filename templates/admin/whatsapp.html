@@ -13,7 +13,11 @@
     status: 'loading',
     isConnected: false,
     qrCode: null,
-    showTestModal: false
+    showTestModal: false,
+    testPhone: '',
+    testMessage: '',
+    testResponse: null,
+    isSendingTest: false
 }" x-init="
     // Load initial status
     fetch('/api/admin/whatsapp/status')
@@ -21,8 +25,17 @@
         .then(data => {
             isConnected = data.is_connected;
             status = data.pairing_status || 'unpaired';
+
+            // Start appropriate polling
+            if (isConnected) {
+                setTimeout(() => startPolling(30000), 1000); // 30 seconds for connected
+            } else {
+                // No polling until user initiates pairing
+            }
         })
-        .catch(() => status = 'error');
+        .catch(() => {
+            status = 'error';
+        });
 ">
 
 <div class="min-h-screen">
@@ -31,8 +44,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">WhatsApp Settings</h1>
-                    <p class="mt-1 text-sm text-gray-500">Manage your WhatsApp bot connection</p>
+                                  <p class="mt-1 text-sm text-gray-500">Manage your WhatsApp bot connection</p>
                 </div>
                 <a href="/admin" class="text-blue-600 hover:text-blue-800">← Back to Dashboard</a>
             </div>
@@ -91,12 +103,16 @@
                                 .then(data => {
                                     if (data.qr_code && data.qr_code !== 'PAIRED_SUCCESSFULLY') {
                                         qrCode = data.qr_code;
+                                        // Start fast polling during pairing (every 3 seconds)
+                                        startPolling(3000);
                                     } else if (data.status === 'paired') {
                                         isConnected = true;
-                                        alert('WhatsApp paired successfully!');
+                                        showNotification('✅ WhatsApp berhasil terhubung!', 'success');
                                     }
                                 })
-                                .catch(err => alert('Failed to initiate pairing: ' + err));
+                                .catch(err => {
+                                    alert('Failed to initiate pairing: ' + err);
+                                });
                         "
                         class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                         📱 Connect WhatsApp
@@ -105,14 +121,19 @@
                     <button
                         x-show="isConnected"
                         @click="
-                            if (confirm('Are you sure you want to disconnect WhatsApp?')) {
+                            if (confirm('Yakin ingin disconnect WhatsApp?')) {
+                                stopPolling(); // Stop all polling
                                 fetch('/api/admin/whatsapp/disconnect', { method: 'POST' })
                                     .then(r => r.json())
                                     .then(() => {
                                         isConnected = false;
                                         status = 'disconnected';
+                                        qrCode = null;
+                                        showNotification('🔌 WhatsApp berhasil di-disconnect', 'info');
                                     })
-                                    .catch(err => alert('Failed to disconnect: ' + err));
+                                    .catch(err => {
+                                        alert('Failed to disconnect: ' + err);
+                                    });
                             }
                         "
                         class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
@@ -145,33 +166,95 @@
 
         <!-- Test Message Section -->
         <div x-show="isConnected" class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Test Bot</h2>
-            <p class="text-sm text-gray-600 mb-4">Send a test message to verify your bot is working correctly</p>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Test WhatsApp Bot</h2>
+            <p class="text-sm text-gray-600 mb-4">Kirim pesan test untuk memverifikasi bot berfungsi dengan benar</p>
 
-            <div class="flex space-x-4">
-                <input
-                    type="tel"
-                    x-model="testPhone"
-                    placeholder="Phone number (e.g., 081234567890)"
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <button
-                    @click="
-                        if (!testPhone) {
-                            alert('Please enter a phone number');
-                            return;
-                        }
-                        fetch('/api/admin/whatsapp/test', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phone_number: testPhone })
-                        })
-                        .then(r => r.json())
-                        .then(() => alert('Test message sent!'))
-                        .catch(err => alert('Failed to send: ' + err));
-                    "
-                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    📤 Send Test Message
-                </button>
+            <div class="space-y-4">
+                <!-- Phone Number Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Tujuan</label>
+                    <input
+                        type="tel"
+                        x-model="testPhone"
+                        placeholder="081234567890"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Message Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pesan Test</label>
+                    <textarea
+                        x-model="testMessage"
+                        placeholder="Ketik pesan test, misal: Ada Toyota Avanza?"
+                        rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                </div>
+
+                <!-- Response Area -->
+                <div x-show="testResponse" class="p-4 bg-gray-50 rounded-lg border">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Response:</h4>
+                    <p class="text-sm text-gray-600" x-text="testResponse"></p>
+                </div>
+
+                <!-- Send Button -->
+                <div class="flex space-x-4">
+                    <button
+                        @click="
+                            if (!testPhone) {
+                                alert('Nomor telepon wajib diisi');
+                                return;
+                            }
+                            if (!testMessage) {
+                                alert('Pesan test wajib diisi');
+                                return;
+                            }
+                            isSendingTest = true;
+                            testResponse = null;
+                            fetch('/api/admin/whatsapp/test', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    phone_number: testPhone,
+                                    message: testMessage
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                testResponse = data.response || 'Message sent successfully!';
+                                showNotification('✅ Test message terkirim!', 'success');
+                            })
+                            .catch(err => {
+                                testResponse = 'Error: ' + err.message;
+                                showNotification('❌ Gagal mengirim pesan test', 'error');
+                            })
+                            .finally(() => {
+                                isSendingTest = false;
+                            });
+                        "
+                        :disabled="isSendingTest"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                        <span x-show="!isSendingTest" class="flex items-center">
+                            📤 Send Test Message
+                        </span>
+                        <span x-show="isSendingTest" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Sending...
+                        </span>
+                    </button>
+
+                    <button
+                        @click="
+                            testPhone = '';
+                            testMessage = '';
+                            testResponse = null;
+                        "
+                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        Clear
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -209,6 +292,89 @@
 <script>
 // QR Code generation
 let qrCodeInstance = null;
+
+// Real-time status polling
+let pollingInterval = null;
+let isPolling = false;
+
+function startPolling(interval = 3000) {
+    if (isPolling) return;
+
+    isPolling = true;
+    pollingInterval = setInterval(() => {
+        fetch('/api/admin/whatsapp/status')
+            .then(r => r.json())
+            .then(data => {
+                // Update Alpine data
+                const alpineData = Alpine.store('whatsapp');
+                const wasConnected = alpineData.isConnected;
+                const wasPairing = alpineData.qrCode !== null;
+
+                alpineData.isConnected = data.is_connected;
+                alpineData.status = data.pairing_status || 'unpaired';
+
+                // Handle status transitions
+                if (data.is_connected && !wasConnected) {
+                    // Just connected - stop fast polling, start slow polling
+                    stopPolling();
+                    startPolling(30000); // 30 seconds for connected state
+                    alpineData.qrCode = null;
+
+                    // Show success notification
+                    showNotification('✅ WhatsApp berhasil terhubung!', 'success');
+                } else if (!data.is_connected && data.pairing_status === 'failed' && wasPairing) {
+                    // Pairing failed
+                    stopPolling();
+                    alpineData.qrCode = null;
+                    showNotification('❌ Pairing gagal. Silakan coba lagi.', 'error');
+                } else if (!data.is_connected && wasConnected) {
+                    // Connection dropped
+                    stopPolling();
+                    showNotification('⚠️ Koneksi terputus. Silakan pairing ulang.', 'warning');
+                }
+            })
+            .catch(err => {
+                console.error('Status polling failed:', err);
+            });
+    }, interval);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+    isPolling = false;
+}
+
+// Initialize Alpine store for polling control
+document.addEventListener('alpine:init', () => {
+    Alpine.store('whatsapp', {
+        startPolling,
+        stopPolling
+    });
+});
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded shadow-lg text-white z-50 transition-opacity duration-300 ${
+        type === 'success' ? 'bg-green-500' :
+        type === 'error' ? 'bg-red-500' :
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
 
 // Watch for QR code updates
 document.addEventListener('alpine:initialized', () => {

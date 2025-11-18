@@ -1,8 +1,7 @@
 {{define "content"}}
 <div class="mb-4 md:mb-6 flex items-center justify-between">
     <div class="flex-1 min-w-0">
-        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Manajemen Tim Sales</h1>
-        <p class="hidden md:block text-gray-600 mt-1">Kelola anggota tim sales Anda</p>
+          <p class="hidden md:block text-gray-600 mt-1">Kelola anggota tim sales Anda</p>
     </div>
     <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg flex items-center space-x-2 transition-colors flex-shrink-0"
             onclick="openAddModal()">
@@ -24,7 +23,7 @@
         <div class="mt-3">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Tambah Sales</h3>
             <div id="form-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
-            <form @submit.prevent="validateAndSubmit"
+            <form id="sales-form" data-form-validator
                   hx-post="/api/sales"
                   hx-ext="json-enc"
                   hx-on::after-request="if(event.detail.xhr.status === 201) { htmx.ajax('GET', '/admin/sales/table', {target:'#sales-table', swap:'outerHTML'}); closeAddModal(); document.getElementById('form-error').classList.add('hidden'); resetForm(); } else if(event.detail.xhr.status >= 400) { handleServerError(event.detail.xhr); }"

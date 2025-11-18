@@ -1,7 +1,6 @@
 {{define "content"}}
 <div class="mb-4 md:mb-6">
     <div class="flex-1 min-w-0">
-        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Conversations</h1>
         <p class="hidden md:block text-gray-600 mt-1">Monitor percakapan customer dan sales</p>
     </div>
 </div>
@@ -15,6 +14,7 @@
                 hx-get="/admin/conversations/table?type=all"
                 hx-target="#conversations-table"
                 hx-swap="outerHTML"
+                hx-indicator="#conversations-loading"
                 class="px-4 py-2 rounded-lg font-medium transition-colors">
             Semua
         </button>
@@ -23,6 +23,7 @@
                 hx-get="/admin/conversations/table?type=customer"
                 hx-target="#conversations-table"
                 hx-swap="outerHTML"
+                hx-indicator="#conversations-loading"
                 class="px-4 py-2 rounded-lg font-medium transition-colors">
             Customer
         </button>
@@ -31,6 +32,7 @@
                 hx-get="/admin/conversations/table?type=sales"
                 hx-target="#conversations-table"
                 hx-swap="outerHTML"
+                hx-indicator="#conversations-loading"
                 class="px-4 py-2 rounded-lg font-medium transition-colors">
             Sales
         </button>
@@ -45,11 +47,25 @@
                hx-target="#conversations-table"
                hx-swap="outerHTML"
                hx-include="this"
+               hx-indicator="#conversations-loading"
                name="search"
                class="w-full md:w-96 px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
         <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
+    </div>
+</div>
+
+<!-- Loading Indicator -->
+<div id="conversations-loading" class="htmx-indicator hidden">
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+        <div class="inline-flex items-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-gray-600">Memuat data...</span>
+        </div>
     </div>
 </div>
 
@@ -128,7 +144,7 @@ function truncateText(text, maxLength) {
             {{range .Conversations}}
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{.PhoneNumber}}</div>
+                    <div class="text-sm font-medium text-gray-900" x-data x-text="formatPhone('{{.PhoneNumber}}')"></div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     {{if .IsSales}}
@@ -177,7 +193,7 @@ function truncateText(text, maxLength) {
         <div class="p-4 hover:bg-gray-50">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900">{{.PhoneNumber}}</h3>
+                    <h3 class="text-base font-semibold text-gray-900" x-data x-text="formatPhone('{{.PhoneNumber}}')"></h3>
                     <div class="mt-1">
                         {{if .IsSales}}
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
@@ -225,9 +241,10 @@ function truncateText(text, maxLength) {
             </div>
             <div class="flex space-x-2">
                 {{if gt .Page 1}}
-                <button hx-get="/admin/conversations/table?page={{sub .Page 1}}&limit={{.Limit}}"
+                <button hx-get="/admin/conversations/table?page={{sub .Page 1}}&limit={{.Limit}}&type={{$.CurrentType}}&search={{$.CurrentSearch | urlEncode}}"
                         hx-target="#conversations-table"
                         hx-swap="outerHTML"
+                        hx-indicator="#conversations-loading"
                         class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Previous
                 </button>
@@ -238,9 +255,10 @@ function truncateText(text, maxLength) {
                 {{end}}
 
                 {{if lt .Page .TotalPages}}
-                <button hx-get="/admin/conversations/table?page={{add .Page 1}}&limit={{.Limit}}"
+                <button hx-get="/admin/conversations/table?page={{add .Page 1}}&limit={{.Limit}}&type={{$.CurrentType}}&search={{$.CurrentSearch | urlEncode}}"
                         hx-target="#conversations-table"
                         hx-swap="outerHTML"
+                        hx-indicator="#conversations-loading"
                         class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Next
                 </button>
@@ -260,7 +278,7 @@ function truncateText(text, maxLength) {
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada conversation</h3>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada conversation.</h3>
         <p class="mt-1 text-sm text-gray-500">Conversation akan muncul saat ada interaksi dengan customer</p>
     </div>
     {{end}}
