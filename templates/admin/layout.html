@@ -6,8 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}} - Admin Dashboard</title>
 
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="/static/css/output.css">
+    <!-- Tech Blue Admin Theme (Clean) -->
+    <link rel="stylesheet" href="/static/css/tech-blue-admin-clean.css?v=20251119-02">
+
+    <!-- Comprehensive CSS Override - Root Cause Fix -->
+    <link rel="stylesheet" href="/static/css/comprehensive-override.css?v=20251119-03">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Basecoat UI -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.6/dist/basecoat.cdn.min.css">
@@ -66,26 +72,139 @@
             right: 24px !important;
             z-index: 9999 !important;
         }
+
+        /* Admin Navigation Styles */
+        .admin-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .admin-nav a {
+            display: flex;
+            align-items: center;
+            px-6 py-3 text-gray-100 hover:bg-gray-700 transition-colors text-decoration-none;
+        }
+
+        .admin-nav a.active {
+            background-color: #1f2937;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .admin-nav svg {
+            w-5 h-5 mr-3 flex-shrink-0;
+        }
+
+        /* Fix Sidebar Visibility - Epic 8 Story 8-1 */
+        @media (min-width: 768px) {
+            .hidden.md\\:flex {
+                display: flex !important;
+            }
+
+            .hidden.md\\:flex.md\\:flex-shrink-0 {
+                display: flex !important;
+                flex-shrink: 0 !important;
+            }
+
+            .sidebar {
+                display: flex !important;
+                width: 240px !important;
+                min-height: 100vh !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                z-index: 40 !important;
+            }
+
+            .flex-1.md\\:ml-60 {
+                margin-left: 240px !important;
+            }
+        }
+
+        /* Force desktop sidebar visibility */
+        @media (min-width: 1024px) {
+            body > div > div:first-child > div.sidebar {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen" x-data="{ sidebarOpen: false }">
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-             class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
-
-            <!-- Logo -->
-            <div class="flex items-center justify-between h-16 px-6 bg-gray-900">
-                <h1 class="text-xl font-bold">{{.TenantName}}</h1>
-                <button @click="sidebarOpen = false" class="lg:hidden">
+<body class="admin-body">
+    <!-- Mobile Navigation Bar -->
+    <div class="md:hidden bg-gray-800 text-white">
+        <div class="flex items-center justify-between h-16 px-4">
+            <h1 class="text-lg font-bold">{{.TenantName}}</h1>
+            <!-- Mobile Menu Dropdown -->
+            <div x-data="{ mobileMenuOpen: false }">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-md hover:bg-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Dropdown -->
+                <div x-show="mobileMenuOpen" @click.away="mobileMenuOpen = false" x-cloak
+                     class="mobile-menu-dropdown fixed top-16 right-4 w-64 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
+                    <div class="py-2">
+                        <a href="/admin" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "dashboard"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">📊</span>
+                            Dashboard
+                        </a>
+                        <a href="/admin/cars" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "cars"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">🚗</span>
+                            Mobil
+                        </a>
+                        <a href="/admin/sales" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "sales"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">👥</span>
+                            Tim Sales
+                        </a>
+                        <a href="/admin/conversations" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "conversations"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">💬</span>
+                            Percakapan
+                        </a>
+                        <a href="/admin/analytics" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "analytics"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">📊</span>
+                            Analitik
+                        </a>
+                        <a href="/admin/blog" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "blog"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">📝</span>
+                            Blog
+                        </a>
+                        <a href="/admin/whatsapp" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "whatsapp"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">📱</span>
+                            WhatsApp Bot
+                        </a>
+                        <a href="/admin/branding" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "branding"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">🎨</span>
+                            Branding
+                        </a>
+                        <a href="/admin/showroom" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "showroom"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">📍</span>
+                            Showroom
+                        </a>
+                        <a href="/admin/settings" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 {{if eq .ActiveMenu "settings"}}bg-blue-50 text-blue-600{{end}}">
+                            <span class="mr-3">⚙️</span>
+                            Pengaturan
+                        </a>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex">
+        <!-- Desktop Sidebar -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="sidebar w-60 bg-gray-800 text-white flex flex-col h-screen">
+                <!-- Logo -->
+                <div class="flex items-center justify-center h-16 px-6 bg-gray-900">
+                    <h1 class="text-xl font-bold">{{.TenantName}}</h1>
+                </div>
 
             <!-- Navigation -->
-            <nav class="admin-nav">
+            <nav class="admin-nav flex-1 py-2">
+                <div class="sidebar-menu">
                 <a href="/admin" class="{{if eq .ActiveMenu "dashboard"}}active{{end}}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -137,36 +256,34 @@
                         📱 WhatsApp Bot
                     </a>
 
-                    <a href="/admin/branding" class="flex items-center px-6 py-3 text-gray-100 hover:bg-gray-700 transition-colors {{if eq .ActiveMenu "branding"}}bg-blue-100 text-blue-800 border-l-4 border-blue-600{{end}}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/admin/branding" class="{{if eq .ActiveMenu "branding"}}active{{end}}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
                         </svg>
-                        <span class="text-xl mr-2">🎨</span>
-                        Branding
+                        🎨 Branding
                     </a>
 
-                    <a href="/admin/showroom" class="flex items-center px-6 py-3 text-gray-100 hover:bg-gray-700 transition-colors {{if eq .ActiveMenu "showroom"}}bg-blue-100 text-blue-800 border-l-4 border-blue-600{{end}}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/admin/showroom" class="{{if eq .ActiveMenu "showroom"}}active{{end}}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span class="text-xl mr-2">📍</span>
-                        Showroom
+                        📍 Showroom
                     </a>
 
-                    <a href="/admin/settings" class="flex items-center px-6 py-3 text-gray-100 hover:bg-gray-700 transition-colors {{if eq .ActiveMenu "settings"}}bg-blue-100 text-blue-800 border-l-4 border-blue-600{{end}}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/admin/settings" class="{{if eq .ActiveMenu "settings"}}active{{end}}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span class="text-xl mr-2">⚙️</span>
-                        Pengaturan
+                        ⚙️ Pengaturan
                     </a>
+                </div>
                 </div>
             </nav>
 
             <!-- User Info -->
-            <div class="absolute bottom-0 w-64 border-t border-gray-700 p-4">
+            <div class="sidebar-user">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -183,27 +300,19 @@
                         </svg>
                     </a>
                 </div>
+                </div>
             </div>
+        </div>
         </div>
 
         <!-- Main Content -->
-        <div class="admin-main">
+        <div class="main-content flex-1 md:ml-60">
             <!-- Top Bar -->
-            <header class="bg-white shadow-sm z-10">
-                <div class="content-wrapper flex items-center justify-between h-20">
-                    <button @click="sidebarOpen = true"
-                            @keyup.escape="sidebarOpen = false"
-                            class="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
-                            aria-label="Toggle sidebar menu">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
+            <header class="admin-header sticky top-0">
+                <div class="header-content flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-lg sm:text-xl font-semibold text-gray-800">{{.Title}}</h1>
 
-                    <div class="flex-1 flex items-center justify-between">
-                        <h1 class="text-2xl font-semibold text-gray-800">{{.Title}}</h1>
-
-                        <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-4">
                             <!-- View Site -->
                             <a href="/" target="_blank" class="text-gray-600 hover:text-gray-900">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,20 +355,15 @@
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-gray-50">
-                <div class="content-wrapper">
+            <main class="admin-main">
+                <div class="content-container">
                     {{template "content" .}}
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen"
-         @click="sidebarOpen = false"
-         x-cloak
-         class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"></div>
-
+  
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
@@ -405,6 +509,38 @@
                 delete elt.dataset.originalText;
             }
         });
+    </script>
+
+    <!-- Dashboard State Management Script -->
+    <script>
+        function dashboardState() {
+            return {
+                loading: true,
+                dashboardData: {},
+                error: null,
+
+                init() {
+                    // Initially hide loading to show the actual dashboard content
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 300);
+                },
+
+                refreshData() {
+                    this.loading = true;
+                    setTimeout(() => {
+                        this.loading = false;
+                        if (window.showToast) {
+                            showToast('Dashboard data refreshed', 'success');
+                        }
+                    }, 300);
+                }
+            }
+        }
+
+        function initDashboard() {
+            console.log('Dashboard initialized');
+        }
     </script>
 </body>
 </html>
